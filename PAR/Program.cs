@@ -16,8 +16,8 @@ namespace PAR
         {
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new SplashForm());
-            Application.Run(new Form1());
+            //Application.Run(new SplashForm());
+            Application.Run(new MainForm());
         }
     }
 }
