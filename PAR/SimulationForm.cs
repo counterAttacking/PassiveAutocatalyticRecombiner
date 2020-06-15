@@ -38,6 +38,24 @@ namespace PAR
             simulation = new Simulation(inputTimeStep, inputSpaceStep, inputDt, 0.005);
             simulation.InitSetting(1, inputTemperature, inputH2Rate, 0);
             simulation.Run(inputTimeStep, inputDt);
+            ShowResult();
+        }
+
+        private void ShowResult()
+        {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (int i = 0; i < (inputTimeStep + 1); i++)
+            {
+                stringBuilder.Append((i + 1) * inputDt);
+                stringBuilder.Append(" ");
+                for (int j = 1; j < (inputSpaceStep + 1); j++)
+                {
+                    stringBuilder.Append(simulation.GetU(i, j));
+                    stringBuilder.Append(" ");
+                }
+                stringBuilder.AppendLine();
+            }
+            textBox1.Text = stringBuilder.ToString();
         }
     }
 }

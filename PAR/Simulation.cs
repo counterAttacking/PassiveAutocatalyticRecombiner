@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 
 namespace PAR
 {
@@ -11,21 +13,31 @@ namespace PAR
     {
         private int nTime, nSpace, sequence;
         private double Vk, A, Dt, dx, pressure = 1, tempInf;
-        private List<double> time, space, Wk;
-        private List<List<double>> density, u, temperature;
-        private List<List<List<double>>> compCTR, wDot, Yk;
+        private double[] time, space, Wk;
+        private double[,] density, u, temperature;
+        private double[,,] compCTR, wDot, Yk;
+
+        private List<List<double>> K1 = new List<List<double>>();
+        private List<List<double>> K2 = new List<List<double>>();
+        private List<List<double>> K3 = new List<List<double>>();
+        private List<List<double>> K4 = new List<List<double>>();
+
+        private double[] b1;
+        private double[] b2;
+        private double[] b3;
+        private double[] b4;
 
         public Simulation(int nTime, int nSpace, double Dt, double dx)
         {
-            time = new List<double>();
-            space = new List<double>();
-            Wk = new List<double>();
-            density = new List<List<double>>();
-            u = new List<List<double>>();
-            temperature = new List<List<double>>();
-            compCTR = new List<List<List<double>>>();
-            wDot = new List<List<List<double>>>();
-            Yk = new List<List<List<double>>>();
+            time = Enumerable.Repeat<double>(0.0, nTime + 1).ToArray<double>();
+            space = Enumerable.Repeat<double>(0.0, nTime + 1).ToArray<double>();
+            Wk = Enumerable.Repeat<double>(0.0, nTime + 1).ToArray<double>();
+            density = new double[nTime + 1, nSpace + 1];
+            u = new double[nTime + 1, nSpace + 1];
+            temperature = new double[nTime + 1, nSpace + 1];
+            compCTR = new double[nTime + 1, nSpace + 1, 15];
+            wDot = new double[nTime + 1, nSpace + 1, 15];
+            Yk = new double[nTime + 1, nSpace + 1, 15];
 
             Vk = 0;
             this.nTime = nTime;
@@ -47,68 +59,95 @@ namespace PAR
             using (StreamReader streamReader = new StreamReader(molecularWeightFileStream, Encoding.UTF8, false))
             {
                 streamReader.ReadLine(); // 첫 줄은 표제이므로
+                var idx = 0;
                 while (!streamReader.EndOfStream)
                 {
                     var lineValues = streamReader.ReadLine().Split(',');
                     var weight = Convert.ToDouble(lineValues[1]);
-                    Wk.Add(weight);
+                    Wk[idx] = weight;
+                    idx += 1;
                 }
             }
 
             for (int i = 0; i < nTime + 1; i++)
             {
-                time.Add(0);
-                this.density.Add(new List<double>());
-                this.u.Add(new List<double>());
-                this.temperature.Add(new List<double>());
-                this.compCTR.Add(new List<List<double>>());
+                time[i] = 0;
+                /*this.compCTR.Add(new List<List<double>>());
                 this.Yk.Add(new List<List<double>>());
-                this.wDot.Add(new List<List<double>>());
+                this.wDot.Add(new List<List<double>>());*/
 
                 for (int j = 0; j < nSpace + 1; j++)
                 {
-                    this.density[i].Add(density);
-                    this.u[i].Add(0);
-                    this.temperature[i].Add(temperature);
-                    this.wDot[i].Add(new List<double>());
+                    this.density[i, j] = density;
+                    this.u[i, j] = 0.0;
+                    this.temperature[i, j] = temperature;
+                    //this.wDot[i].Add(new List<double>());
                     Vk = 0;
 
                     if (i == 0)
                     {
-                        space.Add(0);
+                        space[j] = 0;
                     }
 
-                    this.compCTR[i].Add(new List<double>());
-                    this.Yk[i].Add(new List<double>());
+                    /*this.compCTR[i].Add(new List<double>());
+                    this.Yk[i].Add(new List<double>());*/
                     for (int k = 0; k < 10; k++)
                     {
                         if (k == 1)
                         {
-                            var tmp = H2Rate * p / r / this.temperature[i][j] / 100;
-                            this.compCTR[i][j].Add(tmp);
+                            var tmp = H2Rate * p / r / this.temperature[i, j] / 100;
+                            //this.compCTR[i][j].Add(tmp);
+                            this.compCTR[i, j, k] = tmp;
                         }
                         else if (k == 3)
                         {
-                            var tmp = (100 - H2Rate - steamCTR) * 0.23 * p / r / this.temperature[i][j] / 100;
-                            this.compCTR[i][j].Add(tmp);
+                            var tmp = (100 - H2Rate - steamCTR) * 0.23 * p / r / this.temperature[i, j] / 100;
+                            //this.compCTR[i][j].Add(tmp);
+                            this.compCTR[i, j, k] = tmp;
                         }
                         else if (k == 5)
                         {
-                            var tmp = steamCTR * p / r / this.temperature[i][j] / 100;
-                            this.compCTR[i][j].Add(tmp);
+                            var tmp = steamCTR * p / r / this.temperature[i, j] / 100;
+                            //this.compCTR[i][j].Add(tmp);
+                            this.compCTR[i, j, k] = tmp;
                         }
                         else if (k == 7)
                         {
-                            var tmp = (100 - H2Rate - steamCTR) * 0.77 * p / r / this.temperature[i][j] / 100;
-                            this.compCTR[i][j].Add(tmp);
+                            var tmp = (100 - H2Rate - steamCTR) * 0.77 * p / r / this.temperature[i, j] / 100;
+                            //this.compCTR[i][j].Add(tmp);
+                            this.compCTR[i, j, k] = tmp;
                         }
                         else
                         {
-                            this.compCTR[i][j].Add(0);
+                            //this.compCTR[i][j].Add(0);
+                            this.compCTR[i, j, k] = 0.0;
                         }
-                        this.Yk[i][j].Add(0);
-                        this.wDot[i][j].Add(0);
+                        /*this.Yk[i][j].Add(0);
+                        this.wDot[i][j].Add(0);*/
+                        this.Yk[i, j, k] = 0.0;
+                        this.wDot[i, j, k] = 0.0;
                     }
+                }
+            }
+
+            for (int i = 0; i < nSpace - 1; i++)
+            {
+                K1.Add(new List<double>());
+                for (int j = 0; j < nSpace - 1; j++)
+                {
+                    K1[i].Add(0.0);
+                }
+            }
+            for (int i = 0; i < nSpace; i++)
+            {
+                K2.Add(new List<double>());
+                K3.Add(new List<double>());
+                K4.Add(new List<double>());
+                for (int j = 0; j < nSpace; j++)
+                {
+                    K2[i].Add(0.0);
+                    K3[i].Add(0.0);
+                    K4[i].Add(0.0);
                 }
             }
         }
@@ -119,7 +158,11 @@ namespace PAR
             var tmpSequence = sequence;
             for (int i = tmpSequence; i < tmpSequence + targetStep; i++, sequence++)
             {
+                Thread.Sleep(1);
+                Application.DoEvents();
                 CalculateGoverningEquation(i);
+                Thread.Sleep(1);
+                Application.DoEvents();
                 CalculateSpecies(i);
             }
             sequence = tmpSequence + sequence;
@@ -127,76 +170,69 @@ namespace PAR
 
         private void CalculateGoverningEquation(int timeStep)
         {
-            var K1 = new List<List<double>>();
-            var K2 = new List<List<double>>();
-            var K3 = new List<List<double>>();
-            var K4 = new List<List<double>>();
-
-            var b1 = Enumerable.Repeat<double>(0.0, nSpace - 1).ToArray<double>();
-            var b2 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
-            var b3 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
-            var b4 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
+            b1 = Enumerable.Repeat<double>(0.0, nSpace - 1).ToArray<double>();
+            b2 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
+            b3 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
+            b4 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
 
             // Energy equation_BTCS
             for (int i = 0; i < nSpace - 1; i++)
             {
-                K1.Add(new List<double>());
                 for (int j = 0; j < nSpace - 1; j++)
                 {
-                    K1[i].Add(0.0);
+                    K1[i][j] = 0.0;
                 }
             }
 
-            K1[0][0] = density[timeStep - 1][1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx;
-            K1[0][1] = density[timeStep - 1][1] * A * u[timeStep - 1][1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx;
-            b1[0] = density[timeStep - 1][1] * A * temperature[timeStep - 1][1] / Dt - CalculateChemicalReaction(timeStep - 1, 1) - (-density[timeStep - 1][1] * u[timeStep - 1][1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx) * temperature[timeStep - 1][0];
+            K1[0][0] = density[timeStep - 1, 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx;
+            K1[0][1] = density[timeStep - 1, 1] * A * u[timeStep - 1, 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx;
+            b1[0] = density[timeStep - 1, 1] * A * temperature[timeStep - 1, 1] / Dt - CalculateChemicalReaction(timeStep - 1, 1) - (-density[timeStep - 1, 1] * u[timeStep - 1, 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx) * temperature[timeStep - 1, 0];
 
-            K1[nSpace - 2][nSpace - 3] = -density[timeStep - 1][nSpace - 1] * u[timeStep - 1][nSpace - 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, nSpace - 1) * A / CalculateHeatCapacity(timeStep - 1, nSpace - 1) / dx / dx;
-            K1[nSpace - 2][nSpace - 2] = density[timeStep - 1][nSpace - 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, nSpace - 1) * A / CalculateHeatCapacity(timeStep - 1, nSpace - 1) / dx / dx;
-            b1[nSpace - 2] = density[timeStep - 1][nSpace - 1] * A * temperature[timeStep - 1][nSpace - 1] / Dt - (-density[timeStep - 1][nSpace - 1] * u[timeStep - 1][nSpace - 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, nSpace - 1) * A / CalculateHeatCapacity(timeStep - 1, nSpace - 1) / dx / dx) * temperature[timeStep - 1][nSpace];
+            K1[nSpace - 2][nSpace - 3] = -density[timeStep - 1, nSpace - 1] * u[timeStep - 1, nSpace - 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, nSpace - 1) * A / CalculateHeatCapacity(timeStep - 1, nSpace - 1) / dx / dx;
+            K1[nSpace - 2][nSpace - 2] = density[timeStep - 1, nSpace - 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, nSpace - 1) * A / CalculateHeatCapacity(timeStep - 1, nSpace - 1) / dx / dx;
+            b1[nSpace - 2] = density[timeStep - 1, nSpace - 1] * A * temperature[timeStep - 1, nSpace - 1] / Dt - (-density[timeStep - 1, nSpace - 1] * u[timeStep - 1, nSpace - 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, nSpace - 1) * A / CalculateHeatCapacity(timeStep - 1, nSpace - 1) / dx / dx) * temperature[timeStep - 1, nSpace];
 
             for (int i = 1; i < nSpace / 10; i++)
             {
-                K1[i][i - 1] = -density[timeStep - 1][i + 1] * u[timeStep - 1][i + 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
-                K1[i][i] = density[timeStep - 1][i + 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
-                K1[i][i + 1] = density[timeStep - 1][i + 1] * A * u[timeStep - 1][i + 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
-                b1[i] = density[timeStep - 1][i + 1] * A * temperature[timeStep - 1][i + 1] / Dt;
+                K1[i][i - 1] = -density[timeStep - 1, i + 1] * u[timeStep - 1, i + 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                K1[i][i] = density[timeStep - 1, i + 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                K1[i][i + 1] = density[timeStep - 1, i + 1] * A * u[timeStep - 1, i + 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                b1[i] = density[timeStep - 1, i + 1] * A * temperature[timeStep - 1, i + 1] / Dt;
             }
 
             for (int i = nSpace / 10; i < nSpace - 2; i++)
             {
-                K1[i][i - 1] = -density[timeStep - 1][i + 1] * u[timeStep - 1][i + 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
-                K1[i][i] = density[timeStep - 1][i + 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
-                K1[i][i + 1] = density[timeStep - 1][i + 1] * A * u[timeStep - 1][i + 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
-                b1[i] = density[timeStep - 1][i + 1] * A * temperature[timeStep - 1][i + 1] / Dt;
+                K1[i][i - 1] = -density[timeStep - 1, i + 1] * u[timeStep - 1, i + 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                K1[i][i] = density[timeStep - 1, i + 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                K1[i][i + 1] = density[timeStep - 1, i + 1] * A * u[timeStep - 1, i + 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                b1[i] = density[timeStep - 1, i + 1] * A * temperature[timeStep - 1, i + 1] / Dt;
             }
 
             //온도 업데이트
             var X1 = LUdecompotision(K1, b1.ToList(), nSpace - 1);
             for (int i = 1; i < nSpace - 1; i++)
             {
-                temperature[timeStep][i] = X1[i];
+                temperature[timeStep, i] = X1[i];
             }
 
             //Momentum equation 
             //에측자 uprime 구하기_upwind
             for (int i = 0; i < nSpace; i++)
             {
-                K2.Add(new List<double>());
                 for (int j = 0; j < nSpace; j++)
                 {
-                    K2[i].Add(0.0);
+                    K2[i][j] = 0.0;
                 }
             }
 
-            K2[0][0] = 1 / Dt + u[timeStep - 1][1] / dx;
-            b2[0] = 9.81 * (temperature[timeStep][1] - tempInf) / temperature[timeStep][1] + u[timeStep - 1][1] / Dt + (u[timeStep - 1][1] / dx) * u[timeStep - 1][0];
+            K2[0][0] = 1 / Dt + u[timeStep - 1, 1] / dx;
+            b2[0] = 9.81 * (temperature[timeStep, 1] - tempInf) / temperature[timeStep, 1] + u[timeStep - 1, 1] / Dt + (u[timeStep - 1, 1] / dx) * u[timeStep - 1, 0];
 
             for (int i = 1; i < nSpace; i++)
             {
-                K2[i][i - 1] = -u[timeStep - 1][i + 1] / dx;
-                K2[i][i] = 1 / Dt + u[timeStep - 1][i + 1] / dx;
-                b2[i] = 9.81 * (temperature[timeStep][i + 1] - tempInf) / temperature[timeStep][i + 1] + u[timeStep - 1][i + 1] / Dt;
+                K2[i][i - 1] = -u[timeStep - 1, i + 1] / dx;
+                K2[i][i] = 1 / Dt + u[timeStep - 1, i + 1] / dx;
+                b2[i] = 9.81 * (temperature[timeStep, i + 1] - tempInf) / temperature[timeStep, i + 1] + u[timeStep - 1, i + 1] / Dt;
             }
 
             var X2 = LUdecompotision(K2, b2.ToList(), nSpace);
@@ -204,68 +240,65 @@ namespace PAR
             //수정자 u 구하기_upwind
             for (int i = 0; i < nSpace; i++)
             {
-                K3.Add(new List<double>());
                 for (int j = 0; j < nSpace; j++)
                 {
-                    K3[i].Add(0.0);
+                    K3[i][j] = 0.0;
                 }
             }
 
-            K3[0][0] = 1 / Dt + u[timeStep - 1][1] / dx;
-            b3[0] = 9.81 * (temperature[timeStep][1] - tempInf) / temperature[timeStep][1] + (u[timeStep - 1][1] + X2[0]) * 0.5 / Dt + (u[timeStep - 1][1] / dx) * u[timeStep - 1][0];
+            K3[0][0] = 1 / Dt + u[timeStep - 1, 1] / dx;
+            b3[0] = 9.81 * (temperature[timeStep, 1] - tempInf) / temperature[timeStep, 1] + (u[timeStep - 1, 1] + X2[0]) * 0.5 / Dt + (u[timeStep - 1, 1] / dx) * u[timeStep - 1, 0];
 
             for (int i = 1; i < nSpace; i++)
             {
-                K3[i][i - 1] = -u[timeStep - 1][i + 1] / dx;
-                K3[i][i] = 1 / Dt + u[timeStep - 1][i + 1] / dx;
-                b3[i] = 9.81 * (temperature[timeStep][i + 1] - tempInf) / temperature[timeStep][1 + i] + (u[timeStep - 1][i + 1] + X2[i]) * 0.5 / Dt;
+                K3[i][i - 1] = -u[timeStep - 1, i + 1] / dx;
+                K3[i][i] = 1 / Dt + u[timeStep - 1, i + 1] / dx;
+                b3[i] = 9.81 * (temperature[timeStep, i + 1] - tempInf) / temperature[timeStep, 1 + i] + (u[timeStep - 1, i + 1] + X2[i]) * 0.5 / Dt;
             }
 
             //속도 업데이트
             var X3 = LUdecompotision(K3, b3.ToList(), nSpace);
             for (int i = 1; i < nSpace; i++)
             {
-                u[timeStep][i] = X3[i];
+                u[timeStep, i] = X3[i];
             }
-            u[timeStep][0] = u[timeStep][1]; //JY 추가
-            u[timeStep][nSpace] = u[timeStep][nSpace - 1]; //JY 추가
+            u[timeStep, 0] = u[timeStep, 1]; //JY 추가
+            u[timeStep, nSpace] = u[timeStep, nSpace - 1]; //JY 추가
 
             //Continuity_upwind
             for (int i = 0; i < nSpace; i++)
             {
-                K4.Add(new List<double>());
                 for (int j = 0; j < nSpace; j++)
                 {
-                    K4[i].Add(0.0);
+                    K4[i][j] = 0.0;
                 }
             }
 
-            K4[0][0] = 1 / Dt - u[timeStep][1] / dx;
-            b4[0] = density[timeStep - 1][1] / Dt - (u[timeStep][0] / Dt) * density[timeStep - 1][0];
+            K4[0][0] = 1 / Dt - u[timeStep, 1] / dx;
+            b4[0] = density[timeStep - 1, 1] / Dt - (u[timeStep, 0] / Dt) * density[timeStep - 1, 0];
 
             for (int i = 1; i < nSpace; i++)
             {
-                K4[i][i - 1] = -u[timeStep][i] / Dt;
-                K4[i][i] = 1 / Dt - u[timeStep][i + 1] / dx;
-                b4[i] = density[timeStep - 1][i + 1] / Dt;
+                K4[i][i - 1] = -u[timeStep, i] / Dt;
+                K4[i][i] = 1 / Dt - u[timeStep, i + 1] / dx;
+                b4[i] = density[timeStep - 1, i + 1] / Dt;
             }
 
             //밀도 업데이트
             var X4 = LUdecompotision(K4, b4.ToList(), nSpace);
             for (int i = 1; i < nSpace; i++)
             {
-                density[timeStep][i] = X4[i];
+                density[timeStep, i] = X4[i];
             }
         }
-
 
         private double CalculateChemicalReaction(int timeStep, int spaceStep)
         {
             var tmp = 0.0;
             // Wk의 크기만큼 반복문을 도는 이유는 H, H2, O, O2, OH, H2O, HO2, N2, H2O2, M가 존재하기 때문이다.
-            for (int i = 1; i < Wk.Count; i++)
+            for (int i = 0; i < 10; i++)
             {
-                tmp = tmp + (density[timeStep][spaceStep] * A * Yk[timeStep][spaceStep][i] * Vk * CalculateEachHeatCapacity(timeStep, spaceStep, i) * (temperature[timeStep][spaceStep] - temperature[timeStep][spaceStep - 1]) / dx) + (wDot[timeStep][spaceStep][i] * CalculateEachHeatCapacity(timeStep, spaceStep, i) * Wk[i]);
+                tmp = tmp + (density[timeStep, spaceStep] * A * Yk[timeStep, spaceStep, i] * Vk * CalculateEachHeatCapacity(timeStep, spaceStep, i) * (temperature[timeStep, spaceStep] - temperature[timeStep, spaceStep - 1]) / dx) + (wDot[timeStep, spaceStep, i] * CalculateEachHeatCapacity(timeStep, spaceStep, i) * Wk[i]);
             }
             var tmpCp = CalculateHeatCapacity(timeStep, spaceStep);
             tmp = tmp * A / tmpCp;
@@ -300,10 +333,10 @@ namespace PAR
                 double h0_ho2 = 0;
                 double h0_h2o2 = 0;
 
-                double h_h2 = (h0_h2 + (temperature[timeStep][p] - 298) * cp_h2) * compCTR[timeStep - 1][p][1];
-                double h_o2 = (h0_o2 + (temperature[timeStep][p] - 298) * cp_o2) * compCTR[timeStep - 1][p][3];
-                double h_h2o = (h0_h2o + (temperature[timeStep][p] - 298) * cp_h2o) * compCTR[timeStep - 1][p][5];
-                double h_n2 = (h0_n2 + (temperature[timeStep][p] - 298) * cp_n2) * compCTR[timeStep - 1][p][7];
+                double h_h2 = (h0_h2 + (temperature[timeStep, p] - 298) * cp_h2) * compCTR[timeStep - 1, p, 1];
+                double h_o2 = (h0_o2 + (temperature[timeStep, p] - 298) * cp_o2) * compCTR[timeStep - 1, p, 3];
+                double h_h2o = (h0_h2o + (temperature[timeStep, p] - 298) * cp_h2o) * compCTR[timeStep - 1, p, 5];
+                double h_n2 = (h0_n2 + (temperature[timeStep, p] - 298) * cp_n2) * compCTR[timeStep - 1, p, 7];
                 double h_total = (h_h2 + h_o2 + h_h2o + h_n2);
 
                 if (p < (nSpace / 10) + 1)
@@ -324,7 +357,7 @@ namespace PAR
                                 var aTmpVal = Convert.ToDouble(lineValues[0]);
                                 var nTmpVal = Convert.ToDouble(lineValues[1]);
                                 var eTmpVal = Convert.ToDouble(lineValues[2]);
-                                var calcTmpVal = aTmpVal * Math.Pow(temperature[timeStep][p], nTmpVal) * Math.Exp(-eTmpVal / r / temperature[timeStep][p]) * 10E-06;
+                                var calcTmpVal = aTmpVal * Math.Pow(temperature[timeStep, p], nTmpVal) * Math.Exp(-eTmpVal / r / temperature[timeStep, p]) * 10E-06;
                                 reactionConstant.Add(calcTmpVal);
                             }
                         }
@@ -332,72 +365,72 @@ namespace PAR
                         if (i == 1)
                         {
                             // forward reaction 27개
-                            forwardBackwardReaction[1] = compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][3] * reactionConstant[0];
-                            forwardBackwardReaction[2] = compCTR[timeStep - 1][p - 1][1] * compCTR[timeStep - 1][p - 1][2] * reactionConstant[1];
-                            forwardBackwardReaction[3] = compCTR[timeStep - 1][p - 1][1] * compCTR[timeStep - 1][p - 1][4] * reactionConstant[2];
-                            forwardBackwardReaction[4] = compCTR[timeStep - 1][p - 1][4] * compCTR[timeStep - 1][p - 1][4] * reactionConstant[3];
-                            forwardBackwardReaction[5] = 2 * (compCTR[timeStep - 1][p - 1][1] * compCTR[timeStep - 1][p - 1][3] * reactionConstant[4]);
-                            forwardBackwardReaction[6] = compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][9] * reactionConstant[5];
-                            forwardBackwardReaction[7] = 0.5 * (compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][1]) * reactionConstant[6];
-                            forwardBackwardReaction[8] = compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][5] * reactionConstant[7];
-                            forwardBackwardReaction[9] = compCTR[timeStep - 1][p - 1][2] * compCTR[timeStep - 1][p - 1][2] * compCTR[timeStep - 1][p - 1][9] * reactionConstant[8];
-                            forwardBackwardReaction[10] = compCTR[timeStep - 1][p - 1][2] * compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][9] * reactionConstant[9];
-                            forwardBackwardReaction[11] = compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][4] * compCTR[timeStep - 1][p - 1][9] * reactionConstant[10];
-                            forwardBackwardReaction[12] = compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][3] * reactionConstant[11];
-                            forwardBackwardReaction[13] = compCTR[timeStep - 1][p - 1][0] * 2 * compCTR[timeStep - 1][p - 1][3] * reactionConstant[12];
-                            forwardBackwardReaction[14] = compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][3] * compCTR[timeStep - 1][p - 1][5] * reactionConstant[13];
-                            forwardBackwardReaction[15] = compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][3] * compCTR[timeStep - 1][p - 1][7] * reactionConstant[14];
-                            forwardBackwardReaction[16] = compCTR[timeStep - 1][p - 1][6] * compCTR[timeStep - 1][p - 1][0] * reactionConstant[15];
-                            forwardBackwardReaction[17] = 2 * (compCTR[timeStep - 1][p - 1][6] * compCTR[timeStep - 1][p - 1][0] * reactionConstant[16]);
-                            forwardBackwardReaction[18] = compCTR[timeStep - 1][p - 1][6] * compCTR[timeStep - 1][p - 1][0] * reactionConstant[17];
-                            forwardBackwardReaction[19] = compCTR[timeStep - 1][p - 1][6] * compCTR[timeStep - 1][p - 1][2] * reactionConstant[18];
-                            forwardBackwardReaction[20] = compCTR[timeStep - 1][p - 1][6] * compCTR[timeStep - 1][p - 1][4] * reactionConstant[19];
-                            forwardBackwardReaction[21] = 2 * compCTR[timeStep - 1][p - 1][6] * reactionConstant[20];
-                            forwardBackwardReaction[22] = 2 * compCTR[timeStep - 1][p - 1][7] * compCTR[timeStep - 1][p - 1][9] * reactionConstant[21];
-                            forwardBackwardReaction[23] = compCTR[timeStep - 1][p - 1][4] * compCTR[timeStep - 1][p - 1][4] * compCTR[timeStep - 1][p - 1][9] * reactionConstant[22];
-                            forwardBackwardReaction[24] = compCTR[timeStep - 1][p - 1][8] * compCTR[timeStep - 1][p - 1][0] * reactionConstant[23];
-                            forwardBackwardReaction[25] = compCTR[timeStep - 1][p - 1][8] * compCTR[timeStep - 1][p - 1][0] * reactionConstant[24];
-                            forwardBackwardReaction[26] = compCTR[timeStep - 1][p - 1][8] * compCTR[timeStep - 1][p - 1][2] * reactionConstant[25];
-                            forwardBackwardReaction[27] = compCTR[timeStep - 1][p - 1][8] * compCTR[timeStep - 1][p - 1][4] * reactionConstant[26];
+                            forwardBackwardReaction[1] = compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 3] * reactionConstant[0];
+                            forwardBackwardReaction[2] = compCTR[timeStep - 1, p - 1, 1] * compCTR[timeStep - 1, p - 1, 2] * reactionConstant[1];
+                            forwardBackwardReaction[3] = compCTR[timeStep - 1, p - 1, 1] * compCTR[timeStep - 1, p - 1, 4] * reactionConstant[2];
+                            forwardBackwardReaction[4] = compCTR[timeStep - 1, p - 1, 4] * compCTR[timeStep - 1, p - 1, 4] * reactionConstant[3];
+                            forwardBackwardReaction[5] = 2 * (compCTR[timeStep - 1, p - 1, 1] * compCTR[timeStep - 1, p - 1, 3] * reactionConstant[4]);
+                            forwardBackwardReaction[6] = compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 9] * reactionConstant[5];
+                            forwardBackwardReaction[7] = 0.5 * (compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 1]) * reactionConstant[6];
+                            forwardBackwardReaction[8] = compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 5] * reactionConstant[7];
+                            forwardBackwardReaction[9] = compCTR[timeStep - 1, p - 1, 2] * compCTR[timeStep - 1, p - 1, 2] * compCTR[timeStep - 1, p - 1, 9] * reactionConstant[8];
+                            forwardBackwardReaction[10] = compCTR[timeStep - 1, p - 1, 2] * compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 9] * reactionConstant[9];
+                            forwardBackwardReaction[11] = compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 4] * compCTR[timeStep - 1, p - 1, 9] * reactionConstant[10];
+                            forwardBackwardReaction[12] = compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 3] * reactionConstant[11];
+                            forwardBackwardReaction[13] = compCTR[timeStep - 1, p - 1, 0] * 2 * compCTR[timeStep - 1, p - 1, 3] * reactionConstant[12];
+                            forwardBackwardReaction[14] = compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 3] * compCTR[timeStep - 1, p - 1, 5] * reactionConstant[13];
+                            forwardBackwardReaction[15] = compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 3] * compCTR[timeStep - 1, p - 1, 7] * reactionConstant[14];
+                            forwardBackwardReaction[16] = compCTR[timeStep - 1, p - 1, 6] * compCTR[timeStep - 1, p - 1, 0] * reactionConstant[15];
+                            forwardBackwardReaction[17] = 2 * (compCTR[timeStep - 1, p - 1, 6] * compCTR[timeStep - 1, p - 1, 0] * reactionConstant[16]);
+                            forwardBackwardReaction[18] = compCTR[timeStep - 1, p - 1, 6] * compCTR[timeStep - 1, p - 1, 0] * reactionConstant[17];
+                            forwardBackwardReaction[19] = compCTR[timeStep - 1, p - 1, 6] * compCTR[timeStep - 1, p - 1, 2] * reactionConstant[18];
+                            forwardBackwardReaction[20] = compCTR[timeStep - 1, p - 1, 6] * compCTR[timeStep - 1, p - 1, 4] * reactionConstant[19];
+                            forwardBackwardReaction[21] = 2 * compCTR[timeStep - 1, p - 1, 6] * reactionConstant[20];
+                            forwardBackwardReaction[22] = 2 * compCTR[timeStep - 1, p - 1, 7] * compCTR[timeStep - 1, p - 1, 9] * reactionConstant[21];
+                            forwardBackwardReaction[23] = compCTR[timeStep - 1, p - 1, 4] * compCTR[timeStep - 1, p - 1, 4] * compCTR[timeStep - 1, p - 1, 9] * reactionConstant[22];
+                            forwardBackwardReaction[24] = compCTR[timeStep - 1, p - 1, 8] * compCTR[timeStep - 1, p - 1, 0] * reactionConstant[23];
+                            forwardBackwardReaction[25] = compCTR[timeStep - 1, p - 1, 8] * compCTR[timeStep - 1, p - 1, 0] * reactionConstant[24];
+                            forwardBackwardReaction[26] = compCTR[timeStep - 1, p - 1, 8] * compCTR[timeStep - 1, p - 1, 2] * reactionConstant[25];
+                            forwardBackwardReaction[27] = compCTR[timeStep - 1, p - 1, 8] * compCTR[timeStep - 1, p - 1, 4] * reactionConstant[26];
                             // backward reaction 3개
-                            forwardBackwardReaction[28] = compCTR[timeStep - 1][p - 1][2] * compCTR[timeStep - 1][p - 1][2] * reactionConstant[27];
-                            forwardBackwardReaction[29] = 0.5 * (compCTR[timeStep - 1][p - 1][2] * compCTR[timeStep - 1][p - 1][5]) * reactionConstant[28];
-                            forwardBackwardReaction[30] = 0.5 * (compCTR[timeStep - 1][p - 1][1] * compCTR[timeStep - 1][p - 1][9]) * reactionConstant[29];
+                            forwardBackwardReaction[28] = compCTR[timeStep - 1, p - 1, 2] * compCTR[timeStep - 1, p - 1, 2] * reactionConstant[27];
+                            forwardBackwardReaction[29] = 0.5 * (compCTR[timeStep - 1, p - 1, 2] * compCTR[timeStep - 1, p - 1, 5]) * reactionConstant[28];
+                            forwardBackwardReaction[30] = 0.5 * (compCTR[timeStep - 1, p - 1, 1] * compCTR[timeStep - 1, p - 1, 9]) * reactionConstant[29];
                         }
                         else
                         {
                             // forward reaction 27개
-                            forwardBackwardReaction[1] = compCTR[timeStep][p - 1][0] * compCTR[timeStep][p - 1][3] * reactionConstant[0];
-                            forwardBackwardReaction[2] = compCTR[timeStep][p - 1][1] * compCTR[timeStep][p - 1][2] * reactionConstant[1];
-                            forwardBackwardReaction[3] = compCTR[timeStep][p - 1][1] * compCTR[timeStep][p - 1][4] * reactionConstant[2];
-                            forwardBackwardReaction[4] = compCTR[timeStep][p - 1][4] * compCTR[timeStep][p - 1][4] * reactionConstant[3];
-                            forwardBackwardReaction[5] = 2 * (compCTR[timeStep][p - 1][1] * compCTR[timeStep][p - 1][3] * reactionConstant[4]);
-                            forwardBackwardReaction[6] = compCTR[timeStep][p - 1][0] * compCTR[timeStep][p - 1][0] * compCTR[timeStep][p - 1][9] * reactionConstant[5];
-                            forwardBackwardReaction[7] = 0.5 * (compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep - 1][p - 1][0] * compCTR[timeStep][p - 1][1]) * reactionConstant[6];
-                            forwardBackwardReaction[8] = compCTR[timeStep][p - 1][0] * compCTR[timeStep][p - 1][0] * compCTR[timeStep][p - 1][5] * reactionConstant[7];
-                            forwardBackwardReaction[9] = compCTR[timeStep][p - 1][2] * compCTR[timeStep][p - 1][2] * compCTR[timeStep][p - 1][9] * reactionConstant[8];
-                            forwardBackwardReaction[10] = compCTR[timeStep][p - 1][2] * compCTR[timeStep][p - 1][0] * compCTR[timeStep][p - 1][9] * reactionConstant[9];
-                            forwardBackwardReaction[11] = compCTR[timeStep][p - 1][0] * compCTR[timeStep][p - 1][4] * compCTR[timeStep][p - 1][9] * reactionConstant[10];
-                            forwardBackwardReaction[12] = compCTR[timeStep][p - 1][0] * compCTR[timeStep][p - 1][3] * reactionConstant[11];
-                            forwardBackwardReaction[13] = compCTR[timeStep][p - 1][0] * 2 * compCTR[timeStep][p - 1][3] * reactionConstant[12];
-                            forwardBackwardReaction[14] = compCTR[timeStep][p - 1][0] * compCTR[timeStep][p - 1][3] * compCTR[timeStep][p - 1][5] * reactionConstant[13];
-                            forwardBackwardReaction[15] = compCTR[timeStep][p - 1][0] * compCTR[timeStep][p - 1][3] * compCTR[timeStep][p - 1][7] * reactionConstant[14];
-                            forwardBackwardReaction[16] = compCTR[timeStep][p - 1][6] * compCTR[timeStep][p - 1][3] * reactionConstant[15];
-                            forwardBackwardReaction[17] = 2 * (compCTR[timeStep][p - 1][6] * compCTR[timeStep][p - 1][3] * reactionConstant[16]);
-                            forwardBackwardReaction[18] = compCTR[timeStep][p - 1][6] * compCTR[timeStep][p - 1][3] * reactionConstant[17];
-                            forwardBackwardReaction[19] = compCTR[timeStep][p - 1][6] * compCTR[timeStep][p - 1][2] * reactionConstant[18];
-                            forwardBackwardReaction[20] = compCTR[timeStep][p - 1][6] * compCTR[timeStep][p - 1][4] * reactionConstant[19];
-                            forwardBackwardReaction[21] = 2 * compCTR[timeStep][p - 1][6] * reactionConstant[20];
-                            forwardBackwardReaction[22] = 2 * compCTR[timeStep][p - 1][7] * compCTR[timeStep][p - 1][9] * reactionConstant[21];
-                            forwardBackwardReaction[23] = compCTR[timeStep][p - 1][4] * compCTR[timeStep][p - 1][4] * compCTR[timeStep][p - 1][9] * reactionConstant[22];
-                            forwardBackwardReaction[24] = compCTR[timeStep][p - 1][8] * compCTR[timeStep][p - 1][0] * reactionConstant[23];
-                            forwardBackwardReaction[25] = compCTR[timeStep][p - 1][8] * compCTR[timeStep][p - 1][0] * reactionConstant[24];
-                            forwardBackwardReaction[26] = compCTR[timeStep][p - 1][8] * compCTR[timeStep][p - 1][2] * reactionConstant[25];
-                            forwardBackwardReaction[27] = compCTR[timeStep][p - 1][8] * compCTR[timeStep][p - 1][4] * reactionConstant[26];
+                            forwardBackwardReaction[1] = compCTR[timeStep, p - 1, 0] * compCTR[timeStep, p - 1, 3] * reactionConstant[0];
+                            forwardBackwardReaction[2] = compCTR[timeStep, p - 1, 1] * compCTR[timeStep, p - 1, 2] * reactionConstant[1];
+                            forwardBackwardReaction[3] = compCTR[timeStep, p - 1, 1] * compCTR[timeStep, p - 1, 4] * reactionConstant[2];
+                            forwardBackwardReaction[4] = compCTR[timeStep, p - 1, 4] * compCTR[timeStep, p - 1, 4] * reactionConstant[3];
+                            forwardBackwardReaction[5] = 2 * (compCTR[timeStep, p - 1, 1] * compCTR[timeStep, p - 1, 3] * reactionConstant[4]);
+                            forwardBackwardReaction[6] = compCTR[timeStep, p - 1, 0] * compCTR[timeStep, p - 1, 0] * compCTR[timeStep, p - 1, 9] * reactionConstant[5];
+                            forwardBackwardReaction[7] = 0.5 * (compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep - 1, p - 1, 0] * compCTR[timeStep, p - 1, 1]) * reactionConstant[6];
+                            forwardBackwardReaction[8] = compCTR[timeStep, p - 1, 0] * compCTR[timeStep, p - 1, 0] * compCTR[timeStep, p - 1, 5] * reactionConstant[7];
+                            forwardBackwardReaction[9] = compCTR[timeStep, p - 1, 2] * compCTR[timeStep, p - 1, 2] * compCTR[timeStep, p - 1, 9] * reactionConstant[8];
+                            forwardBackwardReaction[10] = compCTR[timeStep, p - 1, 2] * compCTR[timeStep, p - 1, 0] * compCTR[timeStep, p - 1, 9] * reactionConstant[9];
+                            forwardBackwardReaction[11] = compCTR[timeStep, p - 1, 0] * compCTR[timeStep, p - 1, 4] * compCTR[timeStep, p - 1, 9] * reactionConstant[10];
+                            forwardBackwardReaction[12] = compCTR[timeStep, p - 1, 0] * compCTR[timeStep, p - 1, 3] * reactionConstant[11];
+                            forwardBackwardReaction[13] = compCTR[timeStep, p - 1, 0] * 2 * compCTR[timeStep, p - 1, 3] * reactionConstant[12];
+                            forwardBackwardReaction[14] = compCTR[timeStep, p - 1, 0] * compCTR[timeStep, p - 1, 3] * compCTR[timeStep, p - 1, 5] * reactionConstant[13];
+                            forwardBackwardReaction[15] = compCTR[timeStep, p - 1, 0] * compCTR[timeStep, p - 1, 3] * compCTR[timeStep, p - 1, 7] * reactionConstant[14];
+                            forwardBackwardReaction[16] = compCTR[timeStep, p - 1, 6] * compCTR[timeStep, p - 1, 3] * reactionConstant[15];
+                            forwardBackwardReaction[17] = 2 * (compCTR[timeStep, p - 1, 6] * compCTR[timeStep, p - 1, 3] * reactionConstant[16]);
+                            forwardBackwardReaction[18] = compCTR[timeStep, p - 1, 6] * compCTR[timeStep, p - 1, 3] * reactionConstant[17];
+                            forwardBackwardReaction[19] = compCTR[timeStep, p - 1, 6] * compCTR[timeStep, p - 1, 2] * reactionConstant[18];
+                            forwardBackwardReaction[20] = compCTR[timeStep, p - 1, 6] * compCTR[timeStep, p - 1, 4] * reactionConstant[19];
+                            forwardBackwardReaction[21] = 2 * compCTR[timeStep, p - 1, 6] * reactionConstant[20];
+                            forwardBackwardReaction[22] = 2 * compCTR[timeStep, p - 1, 7] * compCTR[timeStep, p - 1, 9] * reactionConstant[21];
+                            forwardBackwardReaction[23] = compCTR[timeStep, p - 1, 4] * compCTR[timeStep, p - 1, 4] * compCTR[timeStep, p - 1, 9] * reactionConstant[22];
+                            forwardBackwardReaction[24] = compCTR[timeStep, p - 1, 8] * compCTR[timeStep, p - 1, 0] * reactionConstant[23];
+                            forwardBackwardReaction[25] = compCTR[timeStep, p - 1, 8] * compCTR[timeStep, p - 1, 0] * reactionConstant[24];
+                            forwardBackwardReaction[26] = compCTR[timeStep, p - 1, 8] * compCTR[timeStep, p - 1, 2] * reactionConstant[25];
+                            forwardBackwardReaction[27] = compCTR[timeStep, p - 1, 8] * compCTR[timeStep, p - 1, 4] * reactionConstant[26];
                             // backward reaction 3개
-                            forwardBackwardReaction[28] = compCTR[timeStep][p - 1][2] * compCTR[timeStep - 1][p - 1][2] * reactionConstant[27];
-                            forwardBackwardReaction[29] = 0.5 * (compCTR[timeStep][p - 1][2] * compCTR[timeStep][p - 1][5]) * reactionConstant[28];
-                            forwardBackwardReaction[30] = 0.5 * (compCTR[timeStep][p - 1][1] * compCTR[timeStep][p - 1][9]) * reactionConstant[29];
+                            forwardBackwardReaction[28] = compCTR[timeStep, p - 1, 2] * compCTR[timeStep - 1, p - 1, 2] * reactionConstant[27];
+                            forwardBackwardReaction[29] = 0.5 * (compCTR[timeStep, p - 1, 2] * compCTR[timeStep, p - 1, 5]) * reactionConstant[28];
+                            forwardBackwardReaction[30] = 0.5 * (compCTR[timeStep, p - 1, 1] * compCTR[timeStep, p - 1, 9]) * reactionConstant[29];
                         }
 
                         // Production Rate by species
@@ -425,79 +458,79 @@ namespace PAR
                         //Transient states
                         if (i == 1)
                         {
-                            compCTR[timeStep][p][2] = (p_c_o - r_c_o) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep - 1][p - 1][2];
-                            compCTR[timeStep][p][1] = (p_c_h2 - r_c_h2) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep - 1][p - 1][1];
-                            compCTR[timeStep][p][3] = (p_c_o2 - r_c_o2) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep - 1][p - 1][3];
-                            compCTR[timeStep][p][0] = (p_c_h - r_c_h) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep - 1][p - 1][0];
-                            compCTR[timeStep][p][4] = (p_c_oh - r_c_oh) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep - 1][p - 1][4];
-                            compCTR[timeStep][p][6] = (p_c_ho2 - r_c_ho2) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep - 1][p - 1][6];
-                            compCTR[timeStep][p][5] = (p_c_h2o - r_c_h2o) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep - 1][p - 1][5];
+                            compCTR[timeStep, p, 2] = (p_c_o - r_c_o) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep - 1, p - 1, 2];
+                            compCTR[timeStep, p, 1] = (p_c_h2 - r_c_h2) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep - 1, p - 1, 1];
+                            compCTR[timeStep, p, 3] = (p_c_o2 - r_c_o2) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep - 1, p - 1, 3];
+                            compCTR[timeStep, p, 0] = (p_c_h - r_c_h) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep - 1, p - 1, 0];
+                            compCTR[timeStep, p, 4] = (p_c_oh - r_c_oh) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep - 1, p - 1, 4];
+                            compCTR[timeStep, p, 6] = (p_c_ho2 - r_c_ho2) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep - 1, p - 1, 6];
+                            compCTR[timeStep, p, 5] = (p_c_h2o - r_c_h2o) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep - 1, p - 1, 5];
 
                         }
                         else
                         {
-                            compCTR[timeStep][p][2] = (p_c_o - r_c_o) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep][p][2];
-                            compCTR[timeStep][p][1] = (p_c_h2 - r_c_h2) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep][p][1];
-                            compCTR[timeStep][p][3] = (p_c_o2 - r_c_o2) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep][p][3];
-                            compCTR[timeStep][p][0] = (p_c_h - r_c_h) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep][p][0];
-                            compCTR[timeStep][p][4] = (p_c_oh - r_c_oh) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep][p][4];
-                            compCTR[timeStep][p][6] = (p_c_ho2 - r_c_ho2) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep][p][6];
-                            compCTR[timeStep][p][5] = (p_c_h2o - r_c_h2o) / ((1 / dt) + (u[timeStep][p] / dx)) + compCTR[timeStep][p][5];
+                            compCTR[timeStep, p, 2] = (p_c_o - r_c_o) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep, p, 2];
+                            compCTR[timeStep, p, 1] = (p_c_h2 - r_c_h2) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep, p, 1];
+                            compCTR[timeStep, p, 3] = (p_c_o2 - r_c_o2) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep, p, 3];
+                            compCTR[timeStep, p, 0] = (p_c_h - r_c_h) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep, p, 0];
+                            compCTR[timeStep, p, 4] = (p_c_oh - r_c_oh) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep, p, 4];
+                            compCTR[timeStep, p, 6] = (p_c_ho2 - r_c_ho2) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep, p, 6];
+                            compCTR[timeStep, p, 5] = (p_c_h2o - r_c_h2o) / ((1 / dt) + (u[timeStep, p] / dx)) + compCTR[timeStep, p, 5];
                         }
 
-                        double cp_n = (cp_h2 * compCTR[timeStep][p][1] + cp_h2o * compCTR[timeStep][p][5] + cp_n2 * compCTR[timeStep][p][7] + cp_o2 * compCTR[timeStep][p][3]) / (compCTR[timeStep][p][1] + compCTR[timeStep][p][5] + compCTR[timeStep][p][7] + compCTR[timeStep][p][3]);
-                        temperature[timeStep][p] = temperature[timeStep][p] + 2 * (-h0_h2o) * forwardBackwardReaction[4] / (cp_n * (compCTR[timeStep][p][1] + compCTR[timeStep][p][5] + compCTR[timeStep][p][7] + compCTR[timeStep][p][3])) * dt;
+                        double cp_n = (cp_h2 * compCTR[timeStep, p, 1] + cp_h2o * compCTR[timeStep, p, 5] + cp_n2 * compCTR[timeStep, p, 7] + cp_o2 * compCTR[timeStep, p, 3]) / (compCTR[timeStep, p, 1] + compCTR[timeStep, p, 5] + compCTR[timeStep, p, 7] + compCTR[timeStep, p, 3]);
+                        temperature[timeStep, p] = temperature[timeStep, p] + 2 * (-h0_h2o) * forwardBackwardReaction[4] / (cp_n * (compCTR[timeStep, p, 1] + compCTR[timeStep, p, 5] + compCTR[timeStep, p, 7] + compCTR[timeStep, p, 3])) * dt;
                         // the hydrogen-air burning rate...ref
                         // temperature[timeStep+1][p];
                         // JY 추가
 
                         // H,H2,O,O2,OH,H2O,HO2,N2
-                        double c_total = compCTR[timeStep][p][1] + compCTR[timeStep][p][0] + compCTR[timeStep][p][5] + compCTR[timeStep][p][3] + compCTR[timeStep][p][4] + compCTR[timeStep][p][6] + compCTR[timeStep][p][2] + compCTR[timeStep][p][7];
+                        double c_total = compCTR[timeStep, p, 1] + compCTR[timeStep, p, 0] + compCTR[timeStep, p, 5] + compCTR[timeStep, p, 3] + compCTR[timeStep, p, 4] + compCTR[timeStep, p, 6] + compCTR[timeStep, p, 2] + compCTR[timeStep, p, 7];
 
-                        Yk[timeStep][p][0] = compCTR[timeStep][p][0] / c_total;
-                        Yk[timeStep][p][1] = compCTR[timeStep][p][1] / c_total;
-                        Yk[timeStep][p][2] = compCTR[timeStep][p][2] / c_total;
-                        Yk[timeStep][p][3] = compCTR[timeStep][p][3] / c_total;
-                        Yk[timeStep][p][4] = compCTR[timeStep][p][4] / c_total;
-                        Yk[timeStep][p][5] = compCTR[timeStep][p][5] / c_total;
-                        Yk[timeStep][p][6] = compCTR[timeStep][p][6] / c_total;
+                        Yk[timeStep, p, 0] = compCTR[timeStep, p, 0] / c_total;
+                        Yk[timeStep, p, 1] = compCTR[timeStep, p, 1] / c_total;
+                        Yk[timeStep, p, 2] = compCTR[timeStep, p, 2] / c_total;
+                        Yk[timeStep, p, 3] = compCTR[timeStep, p, 3] / c_total;
+                        Yk[timeStep, p, 4] = compCTR[timeStep, p, 4] / c_total;
+                        Yk[timeStep, p, 5] = compCTR[timeStep, p, 5] / c_total;
+                        Yk[timeStep, p, 6] = compCTR[timeStep, p, 6] / c_total;
 
-                        wDot[timeStep][p][0] = p_c_h - r_c_h;
-                        wDot[timeStep][p][1] = p_c_h2 - r_c_h2;
-                        wDot[timeStep][p][2] = p_c_o - r_c_o;
-                        wDot[timeStep][p][3] = p_c_o2 - r_c_o2;
-                        wDot[timeStep][p][4] = p_c_oh - r_c_oh;
-                        wDot[timeStep][p][5] = p_c_h2o - r_c_h2o;
-                        wDot[timeStep][p][6] = p_c_ho2 - r_c_ho2;
+                        wDot[timeStep, p, 0] = p_c_h - r_c_h;
+                        wDot[timeStep, p, 1] = p_c_h2 - r_c_h2;
+                        wDot[timeStep, p, 2] = p_c_o - r_c_o;
+                        wDot[timeStep, p, 3] = p_c_o2 - r_c_o2;
+                        wDot[timeStep, p, 4] = p_c_oh - r_c_oh;
+                        wDot[timeStep, p, 5] = p_c_h2o - r_c_h2o;
+                        wDot[timeStep, p, 6] = p_c_ho2 - r_c_ho2;
                     }
                 }
                 else
                 {
-                    compCTR[timeStep][p][2] = compCTR[timeStep - 1][p - 1][2];
-                    compCTR[timeStep][p][1] = compCTR[timeStep - 1][p - 1][1];
-                    compCTR[timeStep][p][3] = compCTR[timeStep - 1][p - 1][3];
-                    compCTR[timeStep][p][0] = compCTR[timeStep - 1][p - 1][0];
-                    compCTR[timeStep][p][4] = compCTR[timeStep - 1][p - 1][4];
-                    compCTR[timeStep][p][6] = compCTR[timeStep - 1][p - 1][6];
-                    compCTR[timeStep][p][5] = compCTR[timeStep - 1][p - 1][5];
+                    compCTR[timeStep, p, 2] = compCTR[timeStep - 1, p - 1, 2];
+                    compCTR[timeStep, p, 1] = compCTR[timeStep - 1, p - 1, 1];
+                    compCTR[timeStep, p, 3] = compCTR[timeStep - 1, p - 1, 3];
+                    compCTR[timeStep, p, 0] = compCTR[timeStep - 1, p - 1, 0];
+                    compCTR[timeStep, p, 4] = compCTR[timeStep - 1, p - 1, 4];
+                    compCTR[timeStep, p, 6] = compCTR[timeStep - 1, p - 1, 6];
+                    compCTR[timeStep, p, 5] = compCTR[timeStep - 1, p - 1, 5];
 
-                    double c_total = compCTR[timeStep][p][1] + compCTR[timeStep][p][0] + compCTR[timeStep][p][5] + compCTR[timeStep][p][3] + compCTR[timeStep][p][4] + compCTR[timeStep][p][6] + compCTR[timeStep][p][2] + compCTR[timeStep][p][7];
+                    double c_total = compCTR[timeStep, p, 1] + compCTR[timeStep, p, 0] + compCTR[timeStep, p, 5] + compCTR[timeStep, p, 3] + compCTR[timeStep, p, 4] + compCTR[timeStep, p, 6] + compCTR[timeStep, p, 2] + compCTR[timeStep, p, 7];
 
-                    Yk[timeStep][p][0] = compCTR[timeStep][p][0] / c_total;
-                    Yk[timeStep][p][1] = compCTR[timeStep][p][1] / c_total;
-                    Yk[timeStep][p][2] = compCTR[timeStep][p][2] / c_total;
-                    Yk[timeStep][p][3] = compCTR[timeStep][p][3] / c_total;
-                    Yk[timeStep][p][4] = compCTR[timeStep][p][4] / c_total;
-                    Yk[timeStep][p][5] = compCTR[timeStep][p][5] / c_total;
-                    Yk[timeStep][p][6] = compCTR[timeStep][p][6] / c_total;
+                    Yk[timeStep, p, 0] = compCTR[timeStep, p, 0] / c_total;
+                    Yk[timeStep, p, 1] = compCTR[timeStep, p, 1] / c_total;
+                    Yk[timeStep, p, 2] = compCTR[timeStep, p, 2] / c_total;
+                    Yk[timeStep, p, 3] = compCTR[timeStep, p, 3] / c_total;
+                    Yk[timeStep, p, 4] = compCTR[timeStep, p, 4] / c_total;
+                    Yk[timeStep, p, 5] = compCTR[timeStep, p, 5] / c_total;
+                    Yk[timeStep, p, 6] = compCTR[timeStep, p, 6] / c_total;
 
-                    wDot[timeStep][p][0] = 0;
-                    wDot[timeStep][p][1] = 0;
-                    wDot[timeStep][p][2] = 0;
-                    wDot[timeStep][p][3] = 0;
-                    wDot[timeStep][p][4] = 0;
-                    wDot[timeStep][p][5] = 0;
-                    wDot[timeStep][p][6] = 0;
+                    wDot[timeStep, p, 0] = 0;
+                    wDot[timeStep, p, 1] = 0;
+                    wDot[timeStep, p, 2] = 0;
+                    wDot[timeStep, p, 3] = 0;
+                    wDot[timeStep, p, 4] = 0;
+                    wDot[timeStep, p, 5] = 0;
+                    wDot[timeStep, p, 6] = 0;
                 }
             }
             time[timeStep] = time[timeStep - 1] + Dt;
@@ -507,9 +540,9 @@ namespace PAR
         {
             var tmp = 0.0;
             // Wk의 크기만큼 반복문을 도는 이유는 H, H2, O, O2, OH, H2O, HO2, N2, H2O2, M가 존재하기 때문이다.
-            for (int i = 0; i < Wk.Count; i++)
+            for (int i = 0; i < 10; i++)
             {
-                tmp += compCTR[timeStep][spaceStep][i] * CalculateEachHeatCapacity(timeStep, spaceStep, i);
+                tmp += compCTR[timeStep, spaceStep, i] * CalculateEachHeatCapacity(timeStep, spaceStep, i);
             }
             return tmp;
         }
@@ -518,15 +551,15 @@ namespace PAR
         {
             if (speciesNo == 1)
             {
-                return Polynomial(temperature[timeStep][spaceStep], -1.313e-22, 8.49e-19, -2.39e-15, 3.828e-12, -3.815e-9, 2.423e-6, -0.0009553, 0.2132, 8.625);
+                return Polynomial(temperature[timeStep, spaceStep], -1.313e-22, 8.49e-19, -2.39e-15, 3.828e-12, -3.815e-9, 2.423e-6, -0.0009553, 0.2132, 8.625);
             }
             else if (speciesNo == 3)
             {
-                return Polynomial(temperature[timeStep][spaceStep], -8.836e-23, 4.992e-19, -1.191e-15, 1.526e-12, -1.083e-9, 3.593e-7, 6.151e-6, -0.02646, 32.96);
+                return Polynomial(temperature[timeStep, spaceStep], -8.836e-23, 4.992e-19, -1.191e-15, 1.526e-12, -1.083e-9, 3.593e-7, 6.151e-6, -0.02646, 32.96);
             }
             else if (speciesNo == 5)
             {
-                return Polynomial(temperature[timeStep][spaceStep], 1.3e-21, -9.267e-18, 2.855e-14, -4.963e-11, 5.326e-8, -3.614e-5, 0.01516, -3.588, 401.3);
+                return Polynomial(temperature[timeStep, spaceStep], 1.3e-21, -9.267e-18, 2.855e-14, -4.963e-11, 5.326e-8, -3.614e-5, 0.01516, -3.588, 401.3);
             }
             else
             {
@@ -538,9 +571,9 @@ namespace PAR
         {
             var tmp = 0.0;
             // Wk의 크기만큼 반복문을 도는 이유는 H, H2, O, O2, OH, H2O, HO2, N2, H2O2, M가 존재하기 때문이다.
-            for (int i = 0; i < Wk.Count; i++)
+            for (int i = 0; i < 9; i++)
             {
-                tmp += compCTR[timeStep][spaceStep][i] * CalculateEachThermalConductivity(timeStep, spaceStep, i);
+                tmp += compCTR[timeStep, spaceStep, i] * CalculateEachThermalConductivity(timeStep, spaceStep, i);
             }
             return tmp;
         }
@@ -549,15 +582,15 @@ namespace PAR
         {
             if (speciesNo == 1)
             {
-                return Polynomial(temperature[timeStep][spaceStep], 4.716e-23, -2.716e-19, 6.768e-16, -9.528e-13, 8.285e-10, -4.555e-7, 0.0001546, -0.02915, 2.499);
+                return Polynomial(temperature[timeStep, spaceStep], 4.716e-23, -2.716e-19, 6.768e-16, -9.528e-13, 8.285e-10, -4.555e-7, 0.0001546, -0.02915, 2.499);
             }
             else if (speciesNo == 3)
             {
-                return Polynomial(temperature[timeStep][spaceStep], -2.136e-25, 1.293e-21, -3.401e-18, 5.064e-15, -4.631e-12, 2.62e-9, -8.841e-7, 0.0002421, -0.009727);
+                return Polynomial(temperature[timeStep, spaceStep], -2.136e-25, 1.293e-21, -3.401e-18, 5.064e-15, -4.631e-12, 2.62e-9, -8.841e-7, 0.0002421, -0.009727);
             }
             else if (speciesNo == 5)
             {
-                return Polynomial(temperature[timeStep][spaceStep], 1.796e-25, -1.295e-21, 4.062e-18, -7.252e-15, 8.087e-12, -5.813e-9, 2.697e-6, -0.0006474, 0.07913);
+                return Polynomial(temperature[timeStep, spaceStep], 1.796e-25, -1.295e-21, 4.062e-18, -7.252e-15, 8.087e-12, -5.813e-9, 2.697e-6, -0.0006474, 0.07913);
             }
             else
             {
@@ -568,9 +601,9 @@ namespace PAR
         private double CalculateEnthalpy(int timeStep, int spaceStep)
         {
             var tmp = 0.0;
-            for (int i = 0; i < Wk.Count; i++)
+            for (int i = 0; i < 10; i++)
             {
-                tmp += compCTR[timeStep][spaceStep][i] * CalculateEachEnthalpy(timeStep, spaceStep, i);
+                tmp += compCTR[timeStep, spaceStep, i] * CalculateEachEnthalpy(timeStep, spaceStep, i);
             }
             return tmp;
         }
@@ -579,15 +612,15 @@ namespace PAR
         {
             if (speciesNo == 1)
             {
-                return Polynomial(temperature[timeStep][spaceStep], 1.616e-19, -8.93e-16, 2.135e-12, -2.885e-9, 2.411e-6, -0.001275, 0.4169, -47.8, 5356);
+                return Polynomial(temperature[timeStep, spaceStep], 1.616e-19, -8.93e-16, 2.135e-12, -2.885e-9, 2.411e-6, -0.001275, 0.4169, -47.8, 5356);
             }
             else if (speciesNo == 3)
             {
-                return Polynomial(temperature[timeStep][spaceStep], -1.313e-22, 8.49e-19, -2.39e-15, 3.828e-12, -3.815e-9, 2.423e-6, -0.0009553, 0.2132, 8.625);
+                return Polynomial(temperature[timeStep, spaceStep], -1.313e-22, 8.49e-19, -2.39e-15, 3.828e-12, -3.815e-9, 2.423e-6, -0.0009553, 0.2132, 8.625);
             }
             else if (speciesNo == 5)
             {
-                return Polynomial(temperature[timeStep][spaceStep], -5.347e-20, 3.821e-16, -1.181e-12, 2.06e-9, -2.222e-6, 0.00152, -0.6401, 186, 1.997e4);
+                return Polynomial(temperature[timeStep, spaceStep], -5.347e-20, 3.821e-16, -1.181e-12, 2.06e-9, -2.222e-6, 0.00152, -0.6401, 186, 1.997e4);
             }
             else
             {
@@ -664,6 +697,21 @@ namespace PAR
             }
 
             return X.ToList();
+        }
+
+        public double GetU(int i, int j)
+        {
+            return u[i, j];
+        }
+
+        public double GetTemperature(int i, int j)
+        {
+            return temperature[i, j];
+        }
+
+        public double GetH2(int i, int j)
+        {
+            return compCTR[i, j, 1];
         }
     }
 }
