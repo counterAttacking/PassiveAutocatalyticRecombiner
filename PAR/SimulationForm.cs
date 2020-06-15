@@ -14,6 +14,8 @@ namespace PAR
     {
         private Simulation simulation;
 
+        private SimulationInputForm frmSimulationInput = new SimulationInputForm();
+
         public double inputTemperature;
         public double inputH2Rate;
         public double inputTimeStep;
@@ -27,9 +29,8 @@ namespace PAR
 
         private void TsmiInputValues_Click(object sender, EventArgs e)
         {
-            var frmsimulationInput = new SimulationInputForm();
-            frmsimulationInput.Owner = this;
-            frmsimulationInput.Show();
+            frmSimulationInput.Owner = this;
+            frmSimulationInput.ShowDialog();
         }
 
         private void TsmiRunSimulation_Click(object sender, EventArgs e)

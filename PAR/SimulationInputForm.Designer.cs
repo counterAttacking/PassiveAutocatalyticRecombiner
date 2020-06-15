@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(SimulationInputForm));
             this.label1 = new System.Windows.Forms.Label();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.txtDt = new System.Windows.Forms.TextBox();
@@ -49,9 +50,9 @@
             // 
             this.label1.AutoSize = true;
             this.label1.Font = new System.Drawing.Font("Consolas", 22.2F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.Location = new System.Drawing.Point(27, 28);
+            this.label1.Location = new System.Drawing.Point(4, 23);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(524, 45);
+            this.label1.Size = new System.Drawing.Size(399, 36);
             this.label1.TabIndex = 0;
             this.label1.Text = "Input for PAR Simulation";
             // 
@@ -67,102 +68,110 @@
             this.groupBox1.Controls.Add(this.label3);
             this.groupBox1.Controls.Add(this.txtTemperature);
             this.groupBox1.Controls.Add(this.label2);
-            this.groupBox1.Location = new System.Drawing.Point(12, 76);
+            this.groupBox1.Location = new System.Drawing.Point(10, 61);
+            this.groupBox1.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(558, 279);
+            this.groupBox1.Padding = new System.Windows.Forms.Padding(3, 2, 3, 2);
+            this.groupBox1.Size = new System.Drawing.Size(383, 223);
             this.groupBox1.TabIndex = 1;
             this.groupBox1.TabStop = false;
             // 
             // txtDt
             // 
-            this.txtDt.Location = new System.Drawing.Point(255, 229);
+            this.txtDt.Location = new System.Drawing.Point(198, 182);
+            this.txtDt.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtDt.Name = "txtDt";
-            this.txtDt.Size = new System.Drawing.Size(167, 25);
+            this.txtDt.Size = new System.Drawing.Size(147, 21);
             this.txtDt.TabIndex = 9;
             this.txtDt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label6
             // 
             this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(102, 232);
+            this.label6.Location = new System.Drawing.Point(64, 185);
             this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(21, 15);
+            this.label6.Size = new System.Drawing.Size(16, 12);
             this.label6.TabIndex = 8;
             this.label6.Text = "Dt";
             // 
             // txtSpaceStep
             // 
-            this.txtSpaceStep.Location = new System.Drawing.Point(255, 181);
+            this.txtSpaceStep.Location = new System.Drawing.Point(198, 144);
+            this.txtSpaceStep.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtSpaceStep.Name = "txtSpaceStep";
-            this.txtSpaceStep.Size = new System.Drawing.Size(167, 25);
+            this.txtSpaceStep.Size = new System.Drawing.Size(147, 21);
             this.txtSpaceStep.TabIndex = 7;
             this.txtSpaceStep.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label5
             // 
             this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(102, 184);
+            this.label5.Location = new System.Drawing.Point(64, 146);
             this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(84, 15);
+            this.label5.Size = new System.Drawing.Size(70, 12);
             this.label5.TabIndex = 6;
             this.label5.Text = "Space Step";
             // 
             // txtTimeStep
             // 
-            this.txtTimeStep.Location = new System.Drawing.Point(255, 132);
+            this.txtTimeStep.Location = new System.Drawing.Point(198, 105);
+            this.txtTimeStep.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtTimeStep.Name = "txtTimeStep";
-            this.txtTimeStep.Size = new System.Drawing.Size(167, 25);
+            this.txtTimeStep.Size = new System.Drawing.Size(147, 21);
             this.txtTimeStep.TabIndex = 5;
             this.txtTimeStep.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(102, 135);
+            this.label4.Location = new System.Drawing.Point(64, 107);
             this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(72, 15);
+            this.label4.Size = new System.Drawing.Size(63, 12);
             this.label4.TabIndex = 4;
             this.label4.Text = "Time Step";
             // 
             // txtH2Rate
             // 
-            this.txtH2Rate.Location = new System.Drawing.Point(255, 78);
+            this.txtH2Rate.Location = new System.Drawing.Point(198, 61);
+            this.txtH2Rate.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtH2Rate.Name = "txtH2Rate";
-            this.txtH2Rate.Size = new System.Drawing.Size(167, 25);
+            this.txtH2Rate.Size = new System.Drawing.Size(147, 21);
             this.txtH2Rate.TabIndex = 3;
             this.txtH2Rate.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label3
             // 
             this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(102, 81);
+            this.label3.Location = new System.Drawing.Point(64, 64);
             this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(67, 15);
+            this.label3.Size = new System.Drawing.Size(54, 12);
             this.label3.TabIndex = 2;
             this.label3.Text = "H₂ Rate";
             // 
             // txtTemperature
             // 
-            this.txtTemperature.Location = new System.Drawing.Point(255, 24);
+            this.txtTemperature.Location = new System.Drawing.Point(198, 18);
+            this.txtTemperature.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtTemperature.Name = "txtTemperature";
-            this.txtTemperature.Size = new System.Drawing.Size(167, 25);
+            this.txtTemperature.Size = new System.Drawing.Size(147, 21);
             this.txtTemperature.TabIndex = 1;
             this.txtTemperature.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(102, 27);
+            this.label2.Location = new System.Drawing.Point(64, 21);
             this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(86, 15);
+            this.label2.Size = new System.Drawing.Size(77, 12);
             this.label2.TabIndex = 0;
             this.label2.Text = "Temperature";
             // 
             // btnOK
             // 
-            this.btnOK.Location = new System.Drawing.Point(145, 379);
+            this.btnOK.Location = new System.Drawing.Point(57, 301);
+            this.btnOK.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnOK.Name = "btnOK";
-            this.btnOK.Size = new System.Drawing.Size(126, 62);
+            this.btnOK.Size = new System.Drawing.Size(110, 50);
             this.btnOK.TabIndex = 0;
             this.btnOK.Text = "OK";
             this.btnOK.UseVisualStyleBackColor = true;
@@ -170,9 +179,10 @@
             // 
             // btnCancel
             // 
-            this.btnCancel.Location = new System.Drawing.Point(346, 379);
+            this.btnCancel.Location = new System.Drawing.Point(233, 301);
+            this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnCancel.Name = "btnCancel";
-            this.btnCancel.Size = new System.Drawing.Size(126, 62);
+            this.btnCancel.Size = new System.Drawing.Size(110, 50);
             this.btnCancel.TabIndex = 2;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
@@ -180,13 +190,15 @@
             // 
             // SimulationInputForm
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(582, 453);
+            this.ClientSize = new System.Drawing.Size(416, 362);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOK);
             this.Controls.Add(this.groupBox1);
             this.Controls.Add(this.label1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "SimulationInputForm";
