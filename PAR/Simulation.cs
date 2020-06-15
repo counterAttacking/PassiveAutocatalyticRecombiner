@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,7 +11,7 @@ namespace PAR
     {
         private int nTime, nSpace, sequence;
         private double vk, a, beforeDt, dx, p = 1, tempInf;
-        private List<double> time, space, wk;
+        private List<double> time, space, Wk;
         private List<List<double>> density, u, temperature;
         private List<List<List<double>>> compCTR, wDot, yk;
 
@@ -18,7 +19,7 @@ namespace PAR
         {
             time = new List<double>();
             space = new List<double>();
-            wk = new List<double>();
+            Wk = new List<double>();
             density = new List<List<double>>();
             u = new List<List<double>>();
             temperature = new List<List<double>>();
@@ -35,19 +36,23 @@ namespace PAR
             sequence = 1;
         }
 
-        public void Initialize(double density, double temperature, double H2Rate, double steamCTR)
+        public void InitSetting(double density, double temperature, double H2Rate, double steamCTR)
         {
             tempInf = temperature;
             double r1 = 0.000082, p1 = 1;
 
-            wk.Add(1.00794); // H's g/mol
-            wk.Add(2.01588); // H2's g/mol
-            wk.Add(15.9994); // O's g/mol
-            wk.Add(31.9988); // O2's g/mol
-            wk.Add(17.00734); // OH's g/mol
-            wk.Add(18.01528); // H20's g/mol
-            wk.Add(33.00674); // H02's g/mol
-            wk.Add(28.0134); // N2's g/mol
+            // H, H2, O, O2, OH, H2O, HO2, N2, H2O2, M 순으로 분자량을 읽는다.
+            var molecularWeightFileStream = new MemoryStream(Properties.Resources.MolecularWeight);
+            using (StreamReader streamReader=new StreamReader(molecularWeightFileStream,Encoding.UTF8,false))
+            {
+                streamReader.ReadLine(); // 첫 줄은 표제이므로
+                while(!streamReader.EndOfStream)
+                {
+                    var lineValues = streamReader.ReadLine().Split(',');
+                    var weight = Convert.ToDouble(lineValues[1]);
+                    Wk.Add(weight);
+                }
+            }
 
             for (int i = 0; i < nTime + 1; i++)
             {
@@ -104,7 +109,7 @@ namespace PAR
             }
         }
 
-        public double Polynomial(double x, double p1, double p2, double p3, double p4, double p5, double p6, double p7, double p8, double p9)
+        private double Polynomial(double x, double p1, double p2, double p3, double p4, double p5, double p6, double p7, double p8, double p9)
         {
             double ans = p1 * Math.Pow(x, 8) + p2 * Math.Pow(x, 7) + p3 * Math.Pow(x, 6) + p4 * Math.Pow(x, 5) + p5 * Math.Pow(x, 4) + p6 * Math.Pow(x, 3) + p7 * Math.Pow(x, 2) + p8 * Math.Pow(x, 1) + p9;
             return ans;

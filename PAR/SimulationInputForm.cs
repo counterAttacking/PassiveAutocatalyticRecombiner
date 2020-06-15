@@ -14,8 +14,8 @@ namespace PAR
     {
         private double inputTemperature;
         private double inputH2Rate;
-        private double inputTimeStep;
-        private double inputSpaceStep;
+        private int inputTimeStep;
+        private int inputSpaceStep;
         private double inputDt;
 
         public SimulationInputForm()
@@ -39,8 +39,8 @@ namespace PAR
 
             inputTemperature = Convert.ToDouble(temperature);
             inputH2Rate = Convert.ToDouble(H2Rate);
-            inputTimeStep = Convert.ToDouble(timeStep);
-            inputSpaceStep = Convert.ToDouble(spaceStep);
+            inputTimeStep = Convert.ToInt32(timeStep);
+            inputSpaceStep = Convert.ToInt32(spaceStep);
             inputDt = Convert.ToDouble(Dt);
 
             ((SimulationForm)(this.Owner)).inputTemperature = inputTemperature;

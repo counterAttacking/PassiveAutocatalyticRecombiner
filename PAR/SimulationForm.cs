@@ -18,8 +18,8 @@ namespace PAR
 
         public double inputTemperature;
         public double inputH2Rate;
-        public double inputTimeStep;
-        public double inputSpaceStep;
+        public int inputTimeStep;
+        public int inputSpaceStep;
         public double inputDt;
 
         public SimulationForm()
@@ -35,7 +35,8 @@ namespace PAR
 
         private void TsmiRunSimulation_Click(object sender, EventArgs e)
         {
-
+            simulation = new Simulation(inputTimeStep, inputSpaceStep, inputDt, 0.005);
+            simulation.InitSetting(1, inputTemperature, inputH2Rate, 0);
         }
     }
 }

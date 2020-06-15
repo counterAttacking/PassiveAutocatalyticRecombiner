@@ -61,6 +61,16 @@ namespace PAR.Properties {
         }
         
         /// <summary>
+        ///   System.Byte[] 형식의 지역화된 리소스를 찾습니다.
+        /// </summary>
+        internal static byte[] MolecularWeight {
+            get {
+                object obj = ResourceManager.GetObject("MolecularWeight", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
         ///   (아이콘)과(와) 유사한 System.Drawing.Icon 형식의 지역화된 리소스를 찾습니다.
         /// </summary>
         internal static System.Drawing.Icon PARIcon {
@@ -77,6 +87,16 @@ namespace PAR.Properties {
             get {
                 object obj = ResourceManager.GetObject("PARImg", resourceCulture);
                 return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   System.Byte[] 형식의 지역화된 리소스를 찾습니다.
+        /// </summary>
+        internal static byte[] ReactionConstant {
+            get {
+                object obj = ResourceManager.GetObject("ReactionConstant", resourceCulture);
+                return ((byte[])(obj));
             }
         }
     }
