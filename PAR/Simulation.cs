@@ -10,12 +10,12 @@ namespace PAR
     public class Simulation
     {
         private int nTime, nSpace, sequence;
-        private double Vk, A, beforeDt, dx, pressure = 1, tempInf;
+        private double Vk, A, Dt, dx, pressure = 1, tempInf;
         private List<double> time, space, Wk;
         private List<List<double>> density, u, temperature;
         private List<List<List<double>>> compCTR, wDot, Yk;
 
-        public Simulation(int nTime, int nSpace, double beforeDt, double dx)
+        public Simulation(int nTime, int nSpace, double Dt, double dx)
         {
             time = new List<double>();
             space = new List<double>();
@@ -31,7 +31,7 @@ namespace PAR
             this.nTime = nTime;
             this.nSpace = nSpace;
             A = 1;
-            this.beforeDt = beforeDt;
+            this.Dt = Dt;
             this.dx = dx;
             sequence = 1;
         }
@@ -63,12 +63,14 @@ namespace PAR
                 this.temperature.Add(new List<double>());
                 this.compCTR.Add(new List<List<double>>());
                 this.Yk.Add(new List<List<double>>());
+                this.wDot.Add(new List<List<double>>());
 
                 for (int j = 0; j < nSpace + 1; j++)
                 {
                     this.density[i].Add(density);
                     this.u[i].Add(0);
                     this.temperature[i].Add(temperature);
+                    this.wDot[i].Add(new List<double>());
                     Vk = 0;
 
                     if (i == 0)
@@ -105,9 +107,169 @@ namespace PAR
                             this.compCTR[i][j].Add(0);
                         }
                         this.Yk[i][j].Add(0);
+                        this.wDot[i][j].Add(0);
                     }
                 }
             }
+        }
+
+        public void Run(int targetStep, double Dt)
+        {
+            this.Dt = Dt;
+            var tmpSequence = sequence;
+            for (int i = tmpSequence; i < tmpSequence + targetStep; i++, sequence++)
+            {
+                CalculateGoverningEquation(i);
+                CalculateSpecies(i);
+            }
+            sequence = tmpSequence + sequence;
+        }
+
+        private void CalculateGoverningEquation(int timeStep)
+        {
+            var K1 = new List<List<double>>();
+            var K2 = new List<List<double>>();
+            var K3 = new List<List<double>>();
+            var K4 = new List<List<double>>();
+
+            var b1 = Enumerable.Repeat<double>(0.0, nSpace - 1).ToArray<double>();
+            var b2 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
+            var b3 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
+            var b4 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
+
+            // Energy equation_BTCS
+            for (int i = 0; i < nSpace - 1; i++)
+            {
+                K1.Add(new List<double>());
+                for (int j = 0; j < nSpace - 1; j++)
+                {
+                    K1[i].Add(0.0);
+                }
+            }
+
+            K1[0][0] = density[timeStep - 1][1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx;
+            K1[0][1] = density[timeStep - 1][1] * A * u[timeStep - 1][1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx;
+            b1[0] = density[timeStep - 1][1] * A * temperature[timeStep - 1][1] / Dt - CalculateChemicalReaction(timeStep - 1, 1) - (-density[timeStep - 1][1] * u[timeStep - 1][1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx) * temperature[timeStep - 1][0];
+
+            K1[nSpace - 2][nSpace - 3] = -density[timeStep - 1][nSpace - 1] * u[timeStep - 1][nSpace - 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, nSpace - 1) * A / CalculateHeatCapacity(timeStep - 1, nSpace - 1) / dx / dx;
+            K1[nSpace - 2][nSpace - 2] = density[timeStep - 1][nSpace - 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, nSpace - 1) * A / CalculateHeatCapacity(timeStep - 1, nSpace - 1) / dx / dx;
+            b1[nSpace - 2] = density[timeStep - 1][nSpace - 1] * A * temperature[timeStep - 1][nSpace - 1] / Dt - (-density[timeStep - 1][nSpace - 1] * u[timeStep - 1][nSpace - 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, nSpace - 1) * A / CalculateHeatCapacity(timeStep - 1, nSpace - 1) / dx / dx) * temperature[timeStep - 1][nSpace];
+
+            for (int i = 1; i < nSpace / 10; i++)
+            {
+                K1[i][i - 1] = -density[timeStep - 1][i + 1] * u[timeStep - 1][i + 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                K1[i][i] = density[timeStep - 1][i + 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                K1[i][i + 1] = density[timeStep - 1][i + 1] * A * u[timeStep - 1][i + 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                b1[i] = density[timeStep - 1][i + 1] * A * temperature[timeStep - 1][i + 1] / Dt;
+            }
+
+            for (int i = nSpace / 10; i < nSpace - 2; i++)
+            {
+                K1[i][i - 1] = -density[timeStep - 1][i + 1] * u[timeStep - 1][i + 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                K1[i][i] = density[timeStep - 1][i + 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                K1[i][i + 1] = density[timeStep - 1][i + 1] * A * u[timeStep - 1][i + 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                b1[i] = density[timeStep - 1][i + 1] * A * temperature[timeStep - 1][i + 1] / Dt;
+            }
+
+            //온도 업데이트
+            var X1 = LUdecompotision(K1, b1.ToList(), nSpace - 1);
+            for (int i = 1; i < nSpace - 1; i++)
+            {
+                temperature[timeStep][i] = X1[i];
+            }
+
+            //Momentum equation 
+            //에측자 uprime 구하기_upwind
+            for (int i = 0; i < nSpace; i++)
+            {
+                K2.Add(new List<double>());
+                for (int j = 0; j < nSpace; j++)
+                {
+                    K2[i].Add(0.0);
+                }
+            }
+
+            K2[0][0] = 1 / Dt + u[timeStep - 1][1] / dx;
+            b2[0] = 9.81 * (temperature[timeStep][1] - tempInf) / temperature[timeStep][1] + u[timeStep - 1][1] / Dt + (u[timeStep - 1][1] / dx) * u[timeStep - 1][0];
+
+            for (int i = 1; i < nSpace; i++)
+            {
+                K2[i][i - 1] = -u[timeStep - 1][i + 1] / dx;
+                K2[i][i] = 1 / Dt + u[timeStep - 1][i + 1] / dx;
+                b2[i] = 9.81 * (temperature[timeStep][i + 1] - tempInf) / temperature[timeStep][i + 1] + u[timeStep - 1][i + 1] / Dt;
+            }
+
+            var X2 = LUdecompotision(K2, b2.ToList(), nSpace);
+
+            //수정자 u 구하기_upwind
+            for (int i = 0; i < nSpace; i++)
+            {
+                K3.Add(new List<double>());
+                for (int j = 0; j < nSpace; j++)
+                {
+                    K3[i].Add(0.0);
+                }
+            }
+
+            K3[0][0] = 1 / Dt + u[timeStep - 1][1] / dx;
+            b3[0] = 9.81 * (temperature[timeStep][1] - tempInf) / temperature[timeStep][1] + (u[timeStep - 1][1] + X2[0]) * 0.5 / Dt + (u[timeStep - 1][1] / dx) * u[timeStep - 1][0];
+
+            for (int i = 1; i < nSpace; i++)
+            {
+                K3[i][i - 1] = -u[timeStep - 1][i + 1] / dx;
+                K3[i][i] = 1 / Dt + u[timeStep - 1][i + 1] / dx;
+                b3[i] = 9.81 * (temperature[timeStep][i + 1] - tempInf) / temperature[timeStep][1 + i] + (u[timeStep - 1][i + 1] + X2[i]) * 0.5 / Dt;
+            }
+
+            //속도 업데이트
+            var X3 = LUdecompotision(K3, b3.ToList(), nSpace);
+            for (int i = 1; i < nSpace; i++)
+            {
+                u[timeStep][i] = X3[i];
+            }
+            u[timeStep][0] = u[timeStep][1]; //JY 추가
+            u[timeStep][nSpace] = u[timeStep][nSpace - 1]; //JY 추가
+
+            //Continuity_upwind
+            for (int i = 0; i < nSpace; i++)
+            {
+                K4.Add(new List<double>());
+                for (int j = 0; j < nSpace; j++)
+                {
+                    K4[i].Add(0.0);
+                }
+            }
+
+            K4[0][0] = 1 / Dt - u[timeStep][1] / dx;
+            b4[0] = density[timeStep - 1][1] / Dt - (u[timeStep][0] / Dt) * density[timeStep - 1][0];
+
+            for (int i = 1; i < nSpace; i++)
+            {
+                K4[i][i - 1] = -u[timeStep][i] / Dt;
+                K4[i][i] = 1 / Dt - u[timeStep][i + 1] / dx;
+                b4[i] = density[timeStep - 1][i + 1] / Dt;
+            }
+
+            //밀도 업데이트
+            var X4 = LUdecompotision(K4, b4.ToList(), nSpace);
+            for (int i = 1; i < nSpace; i++)
+            {
+                density[timeStep][i] = X4[i];
+            }
+        }
+
+
+        private double CalculateChemicalReaction(int timeStep, int spaceStep)
+        {
+            var tmp = 0.0;
+            // Wk의 크기만큼 반복문을 도는 이유는 H, H2, O, O2, OH, H2O, HO2, N2, H2O2, M가 존재하기 때문이다.
+            for (int i = 1; i < Wk.Count; i++)
+            {
+                tmp = tmp + (density[timeStep][spaceStep] * A * Yk[timeStep][spaceStep][i] * Vk * CalculateEachHeatCapacity(timeStep, spaceStep, i) * (temperature[timeStep][spaceStep] - temperature[timeStep][spaceStep - 1]) / dx) + (wDot[timeStep][spaceStep][i] * CalculateEachHeatCapacity(timeStep, spaceStep, i) * Wk[i]);
+            }
+            var tmpCp = CalculateHeatCapacity(timeStep, spaceStep);
+            tmp = tmp * A / tmpCp;
+            return tmp;
         }
 
         private void CalculateSpecies(int timeStep)
@@ -147,10 +309,8 @@ namespace PAR
                 if (p < (nSpace / 10) + 1)
                 {
                     // time variables
-                    double dT = 0;
-                    double dt = 0;
                     int iMax = 10000;
-                    dt = beforeDt / iMax;
+                    double dt = Dt / iMax;
                     for (int i = 1; i < iMax + 1; i++)
                     {
                         // ReactionConstant.csv 파일로부터 순서대로 상수값들을 읽는다.
@@ -340,13 +500,170 @@ namespace PAR
                     wDot[timeStep][p][6] = 0;
                 }
             }
-            time[timeStep] = time[timeStep - 1] + beforeDt;
+            time[timeStep] = time[timeStep - 1] + Dt;
+        }
+
+        private double CalculateHeatCapacity(int timeStep, int spaceStep)
+        {
+            var tmp = 0.0;
+            // Wk의 크기만큼 반복문을 도는 이유는 H, H2, O, O2, OH, H2O, HO2, N2, H2O2, M가 존재하기 때문이다.
+            for (int i = 0; i < Wk.Count; i++)
+            {
+                tmp += compCTR[timeStep][spaceStep][i] * CalculateEachHeatCapacity(timeStep, spaceStep, i);
+            }
+            return tmp;
+        }
+
+        private double CalculateEachHeatCapacity(int timeStep, int spaceStep, int speciesNo)
+        {
+            if (speciesNo == 1)
+            {
+                return Polynomial(temperature[timeStep][spaceStep], -1.313e-22, 8.49e-19, -2.39e-15, 3.828e-12, -3.815e-9, 2.423e-6, -0.0009553, 0.2132, 8.625);
+            }
+            else if (speciesNo == 3)
+            {
+                return Polynomial(temperature[timeStep][spaceStep], -8.836e-23, 4.992e-19, -1.191e-15, 1.526e-12, -1.083e-9, 3.593e-7, 6.151e-6, -0.02646, 32.96);
+            }
+            else if (speciesNo == 5)
+            {
+                return Polynomial(temperature[timeStep][spaceStep], 1.3e-21, -9.267e-18, 2.855e-14, -4.963e-11, 5.326e-8, -3.614e-5, 0.01516, -3.588, 401.3);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        private double CalculateThermalConductivity(int timeStep, int spaceStep)
+        {
+            var tmp = 0.0;
+            // Wk의 크기만큼 반복문을 도는 이유는 H, H2, O, O2, OH, H2O, HO2, N2, H2O2, M가 존재하기 때문이다.
+            for (int i = 0; i < Wk.Count; i++)
+            {
+                tmp += compCTR[timeStep][spaceStep][i] * CalculateEachThermalConductivity(timeStep, spaceStep, i);
+            }
+            return tmp;
+        }
+
+        private double CalculateEachThermalConductivity(int timeStep, int spaceStep, int speciesNo)
+        {
+            if (speciesNo == 1)
+            {
+                return Polynomial(temperature[timeStep][spaceStep], 4.716e-23, -2.716e-19, 6.768e-16, -9.528e-13, 8.285e-10, -4.555e-7, 0.0001546, -0.02915, 2.499);
+            }
+            else if (speciesNo == 3)
+            {
+                return Polynomial(temperature[timeStep][spaceStep], -2.136e-25, 1.293e-21, -3.401e-18, 5.064e-15, -4.631e-12, 2.62e-9, -8.841e-7, 0.0002421, -0.009727);
+            }
+            else if (speciesNo == 5)
+            {
+                return Polynomial(temperature[timeStep][spaceStep], 1.796e-25, -1.295e-21, 4.062e-18, -7.252e-15, 8.087e-12, -5.813e-9, 2.697e-6, -0.0006474, 0.07913);
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
+        private double CalculateEnthalpy(int timeStep, int spaceStep)
+        {
+            var tmp = 0.0;
+            for (int i = 0; i < Wk.Count; i++)
+            {
+                tmp += compCTR[timeStep][spaceStep][i] * CalculateEachEnthalpy(timeStep, spaceStep, i);
+            }
+            return tmp;
+        }
+
+        private double CalculateEachEnthalpy(int timeStep, int spaceStep, int speciesNo)
+        {
+            if (speciesNo == 1)
+            {
+                return Polynomial(temperature[timeStep][spaceStep], 1.616e-19, -8.93e-16, 2.135e-12, -2.885e-9, 2.411e-6, -0.001275, 0.4169, -47.8, 5356);
+            }
+            else if (speciesNo == 3)
+            {
+                return Polynomial(temperature[timeStep][spaceStep], -1.313e-22, 8.49e-19, -2.39e-15, 3.828e-12, -3.815e-9, 2.423e-6, -0.0009553, 0.2132, 8.625);
+            }
+            else if (speciesNo == 5)
+            {
+                return Polynomial(temperature[timeStep][spaceStep], -5.347e-20, 3.821e-16, -1.181e-12, 2.06e-9, -2.222e-6, 0.00152, -0.6401, 186, 1.997e4);
+            }
+            else
+            {
+                return 0;
+            }
         }
 
         private double Polynomial(double x, double p1, double p2, double p3, double p4, double p5, double p6, double p7, double p8, double p9)
         {
-            double ans = p1 * Math.Pow(x, 8) + p2 * Math.Pow(x, 7) + p3 * Math.Pow(x, 6) + p4 * Math.Pow(x, 5) + p5 * Math.Pow(x, 4) + p6 * Math.Pow(x, 3) + p7 * Math.Pow(x, 2) + p8 * Math.Pow(x, 1) + p9;
-            return ans;
+            var tmp = p1 * Math.Pow(x, 8) + p2 * Math.Pow(x, 7) + p3 * Math.Pow(x, 6) + p4 * Math.Pow(x, 5) + p5 * Math.Pow(x, 4) + p6 * Math.Pow(x, 3) + p7 * Math.Pow(x, 2) + p8 * Math.Pow(x, 1) + p9;
+            return tmp;
+        }
+
+        private List<double> LUdecompotision(List<List<double>> K, List<double> P, int size)
+        {
+            var a = 0.0;
+            for (int i = 1; i < size; i++)
+            {
+                K[0][i] = K[0][i] / K[0][0];
+            }
+
+            for (int i = 1; i < size - 1; i++)
+            {
+                for (int j = i; j < size; j++)
+                {
+                    for (int k = 0; k < i; k++)
+                    {
+                        a += K[j][k] * K[k][i];
+                    }
+                    K[j][i] = K[j][i] - a;
+                    a = 0.0;
+                }
+                for (int j = i + 1; j < size; j++)
+                {
+                    for (int k = 0; k < i; k++)
+                    {
+                        a += K[i][k] * K[k][j];
+                    }
+                    K[i][j] = (K[i][j] - a) / K[i][i];
+                    a = 0;
+                }
+            }
+
+            for (int i = 0; i < size - 1; i++)
+            {
+                a += K[size - 1][i] * K[i][size - 1];
+            }
+
+            K[size - 1][size - 1] = K[size - 1][size - 1] - a;
+            a = 0.0;
+
+            var C = Enumerable.Repeat<double>(0.0, size).ToArray<double>();
+            C[0] = P[0] / K[0][0];
+            for (int i = 1; i < size; i++)
+            {
+                for (int j = 0; j < i; j++)
+                {
+                    a += K[i][j] * C[j];
+                }
+                C[i] = (P[i] - a) / K[i][i];
+                a = 0.0;
+            }
+
+            var X = Enumerable.Repeat<double>(0.0, size).ToArray<double>();
+            X[size - 1] = C[size - 1];
+            for (int i = size - 2; i >= 0; i--)
+            {
+                for (int j = size - 1; j >= i + 1; j--)
+                {
+                    a += K[i][j] * X[j];
+                }
+                X[i] = C[i] - a;
+                a = 0.0;
+            }
+
+            return X.ToList();
         }
     }
 }

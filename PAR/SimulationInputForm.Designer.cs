@@ -82,7 +82,7 @@
             this.txtDt.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtDt.Name = "txtDt";
             this.txtDt.Size = new System.Drawing.Size(147, 21);
-            this.txtDt.TabIndex = 9;
+            this.txtDt.TabIndex = 4;
             this.txtDt.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label6
@@ -100,7 +100,7 @@
             this.txtSpaceStep.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtSpaceStep.Name = "txtSpaceStep";
             this.txtSpaceStep.Size = new System.Drawing.Size(147, 21);
-            this.txtSpaceStep.TabIndex = 7;
+            this.txtSpaceStep.TabIndex = 3;
             this.txtSpaceStep.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label5
@@ -118,7 +118,7 @@
             this.txtTimeStep.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtTimeStep.Name = "txtTimeStep";
             this.txtTimeStep.Size = new System.Drawing.Size(147, 21);
-            this.txtTimeStep.TabIndex = 5;
+            this.txtTimeStep.TabIndex = 2;
             this.txtTimeStep.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label4
@@ -136,7 +136,7 @@
             this.txtH2Rate.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtH2Rate.Name = "txtH2Rate";
             this.txtH2Rate.Size = new System.Drawing.Size(147, 21);
-            this.txtH2Rate.TabIndex = 3;
+            this.txtH2Rate.TabIndex = 1;
             this.txtH2Rate.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label3
@@ -154,7 +154,7 @@
             this.txtTemperature.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.txtTemperature.Name = "txtTemperature";
             this.txtTemperature.Size = new System.Drawing.Size(147, 21);
-            this.txtTemperature.TabIndex = 1;
+            this.txtTemperature.TabIndex = 0;
             this.txtTemperature.TextAlign = System.Windows.Forms.HorizontalAlignment.Center;
             // 
             // label2
@@ -172,7 +172,7 @@
             this.btnOK.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnOK.Name = "btnOK";
             this.btnOK.Size = new System.Drawing.Size(110, 50);
-            this.btnOK.TabIndex = 0;
+            this.btnOK.TabIndex = 2;
             this.btnOK.Text = "OK";
             this.btnOK.UseVisualStyleBackColor = true;
             this.btnOK.Click += new System.EventHandler(this.BtnOK_Click);
@@ -183,7 +183,7 @@
             this.btnCancel.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
             this.btnCancel.Name = "btnCancel";
             this.btnCancel.Size = new System.Drawing.Size(110, 50);
-            this.btnCancel.TabIndex = 2;
+            this.btnCancel.TabIndex = 3;
             this.btnCancel.Text = "Cancel";
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.BtnCancel_Click);

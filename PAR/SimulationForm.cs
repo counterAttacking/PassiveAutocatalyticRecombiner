@@ -37,6 +37,7 @@ namespace PAR
         {
             simulation = new Simulation(inputTimeStep, inputSpaceStep, inputDt, 0.005);
             simulation.InitSetting(1, inputTemperature, inputH2Rate, 0);
+            simulation.Run(inputTimeStep, inputDt);
         }
     }
 }
