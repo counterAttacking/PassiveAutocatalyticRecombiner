@@ -21,10 +21,16 @@ namespace PAR
         public int inputTimeStep;
         public int inputSpaceStep;
         public double inputDt;
+        public bool isReady = false;
 
         public SimulationForm()
         {
             InitializeComponent();
+        }
+
+        private void SimulationForm_Load(object sender,EventArgs e)
+        {
+            tslblStatus.Text = "Please Input all values";
         }
 
         private void TsmiInputValues_Click(object sender, EventArgs e)
@@ -37,6 +43,7 @@ namespace PAR
         {
             tsmiInputValues.Enabled = false;
             tsmiRunSimulation.Enabled = false;
+            tslblStatus.Text = "Simulation Running!!!";
 
             simulation = new Simulation(inputTimeStep, inputSpaceStep, inputDt, 0.005);
             simulation.InitSetting(1, inputTemperature, inputH2Rate, 0);
@@ -45,6 +52,19 @@ namespace PAR
 
             tsmiInputValues.Enabled = true;
             tsmiRunSimulation.Enabled = true;
+            tslblStatus.Text = "Simulation Completed!!!";
+        }
+
+        public void IsReadyDone()
+        {
+            if(isReady==true)
+            {
+                tslblStatus.Text = "Ready Done!!!";
+            }
+            else
+            {
+                tslblStatus.Text = "Not Ready!!!";
+            }
         }
 
         private void ShowResult()

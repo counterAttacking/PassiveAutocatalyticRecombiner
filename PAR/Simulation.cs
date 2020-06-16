@@ -548,23 +548,7 @@ namespace PAR
         }
 
         private double CalculateEachHeatCapacity(int timeStep, int spaceStep, int speciesNo)
-        {
-            /*if (speciesNo == 1)
-            {
-                return Polynomial(temperature[timeStep, spaceStep], -1.313e-22, 8.49e-19, -2.39e-15, 3.828e-12, -3.815e-9, 2.423e-6, -0.0009553, 0.2132, 8.625);
-            }
-            else if (speciesNo == 3)
-            {
-                return Polynomial(temperature[timeStep, spaceStep], -8.836e-23, 4.992e-19, -1.191e-15, 1.526e-12, -1.083e-9, 3.593e-7, 6.151e-6, -0.02646, 32.96);
-            }
-            else if (speciesNo == 5)
-            {
-                return Polynomial(temperature[timeStep, spaceStep], 1.3e-21, -9.267e-18, 2.855e-14, -4.963e-11, 5.326e-8, -3.614e-5, 0.01516, -3.588, 401.3);
-            }
-            else
-            {
-                return 0;
-            }*/
+        {            
             if (speciesNo == 1)
             {
                 double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
@@ -625,23 +609,7 @@ namespace PAR
         }
 
         private double CalculateEachThermalConductivity(int timeStep, int spaceStep, int speciesNo)
-        {
-            /*if (speciesNo == 1)
-            {
-                return Polynomial(temperature[timeStep, spaceStep], 4.716e-23, -2.716e-19, 6.768e-16, -9.528e-13, 8.285e-10, -4.555e-7, 0.0001546, -0.02915, 2.499);
-            }
-            else if (speciesNo == 3)
-            {
-                return Polynomial(temperature[timeStep, spaceStep], -2.136e-25, 1.293e-21, -3.401e-18, 5.064e-15, -4.631e-12, 2.62e-9, -8.841e-7, 0.0002421, -0.009727);
-            }
-            else if (speciesNo == 5)
-            {
-                return Polynomial(temperature[timeStep, spaceStep], 1.796e-25, -1.295e-21, 4.062e-18, -7.252e-15, 8.087e-12, -5.813e-9, 2.697e-6, -0.0006474, 0.07913);
-            }
-            else
-            {
-                return 0;
-            }*/
+        {            
             if (speciesNo == 1)
             {
                 double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
@@ -701,23 +669,7 @@ namespace PAR
         }
 
         private double CalculateEachEnthalpy(int timeStep, int spaceStep, int speciesNo)
-        {
-            /*if (speciesNo == 1)
-            {
-                return Polynomial(temperature[timeStep, spaceStep], 1.616e-19, -8.93e-16, 2.135e-12, -2.885e-9, 2.411e-6, -0.001275, 0.4169, -47.8, 5356);
-            }
-            else if (speciesNo == 3)
-            {
-                return Polynomial(temperature[timeStep, spaceStep], -1.313e-22, 8.49e-19, -2.39e-15, 3.828e-12, -3.815e-9, 2.423e-6, -0.0009553, 0.2132, 8.625);
-            }
-            else if (speciesNo == 5)
-            {
-                return Polynomial(temperature[timeStep, spaceStep], -5.347e-20, 3.821e-16, -1.181e-12, 2.06e-9, -2.222e-6, 0.00152, -0.6401, 186, 1.997e4);
-            }
-            else
-            {
-                return 0;
-            }*/
+        {            
             if (speciesNo == 1)
             {
                 double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
@@ -840,22 +792,6 @@ namespace PAR
         public double[,,] GetH2 => compCTR;
         public double[,] GetU => u;
         public double[,] GetTemperature => temperature;
-        
-
-        /*public double GetH2(int i, int j)
-        {
-            return compCTR[i, j, 1];
-        }
-
-        public double GetU(int i, int j)
-        {
-            return u[i, j];
-        }
-
-        public double GetTemperature(int i, int j)
-        {
-            return temperature[i, j];
-        }*/
 
         private double MonotonicCubicHermiteSpline(double x, double[] xSrc, double[] ySrc)
         {

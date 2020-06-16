@@ -17,6 +17,7 @@ namespace PAR
         private int inputTimeStep;
         private int inputSpaceStep;
         private double inputDt;
+        private bool isReady = false;
 
         public SimulationInputForm()
         {
@@ -33,6 +34,8 @@ namespace PAR
 
             if (String.IsNullOrEmpty(temperature) || String.IsNullOrEmpty(H2Rate) || String.IsNullOrEmpty(timeStep) || String.IsNullOrEmpty(spaceStep) || String.IsNullOrEmpty(Dt))
             {
+                isReady = false;
+                ((SimulationForm)(this.Owner)).isReady = isReady;
                 MessageBox.Show("입력 값을 모두 입력하지 않았습니다!!!", "", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
@@ -42,18 +45,34 @@ namespace PAR
             inputTimeStep = Convert.ToInt32(timeStep);
             inputSpaceStep = Convert.ToInt32(spaceStep);
             inputDt = Convert.ToDouble(Dt);
+            isReady = true;
 
             ((SimulationForm)(this.Owner)).inputTemperature = inputTemperature;
             ((SimulationForm)(this.Owner)).inputH2Rate = inputH2Rate;
             ((SimulationForm)(this.Owner)).inputTimeStep = inputTimeStep;
             ((SimulationForm)(this.Owner)).inputSpaceStep = inputSpaceStep;
             ((SimulationForm)(this.Owner)).inputDt = inputDt;
+            ((SimulationForm)(this.Owner)).isReady = isReady;
+            ((SimulationForm)(this.Owner)).IsReadyDone();
 
             this.Close();
         }
 
         private void BtnCancel_Click(object sender, EventArgs e)
         {
+            var temperature = txtTemperature.Text;
+            var H2Rate = txtH2Rate.Text;
+            var timeStep = txtTimeStep.Text;
+            var spaceStep = txtSpaceStep.Text;
+            var Dt = txtDt.Text;
+
+            if (String.IsNullOrEmpty(temperature) || String.IsNullOrEmpty(H2Rate) || String.IsNullOrEmpty(timeStep) || String.IsNullOrEmpty(spaceStep) || String.IsNullOrEmpty(Dt))
+            {
+                isReady = false;
+                ((SimulationForm)(this.Owner)).isReady = isReady;
+            }
+
+            ((SimulationForm)(this.Owner)).IsReadyDone();
             this.Close();
         }
     }
