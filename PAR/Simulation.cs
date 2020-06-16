@@ -205,17 +205,17 @@ namespace PAR
 
             for (int i = 1; i < nSpace / 10; i++)
             {
-                K1[i, i - 1] = -density[timeStep - 1, i + 1] * u[timeStep - 1, i + 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
-                K1[i, i] = density[timeStep - 1, i + 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
-                K1[i, i + 1] = density[timeStep - 1, i + 1] * A * u[timeStep - 1, i + 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                K1[i, i - 1] = -density[timeStep - 1, i + 1] * u[timeStep - 1, i + 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / dx / dx;
+                K1[i, i] = density[timeStep - 1, i + 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / dx / dx;
+                K1[i, i + 1] = density[timeStep - 1, i + 1] * A * u[timeStep - 1, i + 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / dx / dx;
                 b1[i] = density[timeStep - 1, i + 1] * A * temperature[timeStep - 1, i + 1] / Dt;
             }
 
             for (int i = nSpace / 10; i < nSpace - 2; i++)
             {
-                K1[i, i - 1] = -density[timeStep - 1, i + 1] * u[timeStep - 1, i + 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
-                K1[i, i] = density[timeStep - 1, i + 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
-                K1[i, i + 1] = density[timeStep - 1, i + 1] * A * u[timeStep - 1, i + 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / (dx * dx);
+                K1[i, i - 1] = -density[timeStep - 1, i + 1] * u[timeStep - 1, i + 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / dx / dx;
+                K1[i, i] = density[timeStep - 1, i + 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / dx / dx;
+                K1[i, i + 1] = density[timeStep - 1, i + 1] * A * u[timeStep - 1, i + 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / dx / dx;
                 b1[i] = density[timeStep - 1, i + 1] * A * temperature[timeStep - 1, i + 1] / Dt;
             }
 
@@ -283,7 +283,7 @@ namespace PAR
         {
             var tmp = 0.0;
             // Wk의 크기만큼 반복문을 도는 이유는 H, H2, O, O2, OH, H2O, HO2, N2, H2O2, M가 존재하기 때문이다.
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 9; i++)
             {
                 tmp = tmp + (density[timeStep, spaceStep] * A * Yk[timeStep, spaceStep, i] * Vk * CalculateEachHeatCapacity(timeStep, spaceStep, i) * (temperature[timeStep, spaceStep] - temperature[timeStep, spaceStep - 1]) / dx) + (wDot[timeStep, spaceStep, i] * CalculateEachHeatCapacity(timeStep, spaceStep, i) * Wk[i]);
             }
@@ -527,7 +527,7 @@ namespace PAR
         {
             var tmp = 0.0;
             // Wk의 크기만큼 반복문을 도는 이유는 H, H2, O, O2, OH, H2O, HO2, N2, H2O2, M가 존재하기 때문이다.
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 9; i++)
             {
                 tmp += compCTR[timeStep, spaceStep, i] * CalculateEachHeatCapacity(timeStep, spaceStep, i);
             }
@@ -648,7 +648,7 @@ namespace PAR
         private double CalculateEnthalpy(int timeStep, int spaceStep)
         {
             var tmp = 0.0;
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 9; i++)
             {
                 tmp += compCTR[timeStep, spaceStep, i] * CalculateEachEnthalpy(timeStep, spaceStep, i);
             }
@@ -661,42 +661,70 @@ namespace PAR
             {
                 double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
                 double[] ySrc = { 10.886, 13.809, 16.738, 19.677, 22.632, 25.61, 28.616, 31.656, 34.736, 37.856, 41.016, 44.226 };
+                for (var i = 0; i < ySrc.Length; i++)
+                {
+                    ySrc[i] = ySrc[i] * 1000;
+                }
                 return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
             }
             else if (speciesNo == 5)
             {
                 double[] xSrc = { 400, 449.33, 500.62, 599.79, 700.42, 799.58, 900.21, 1000.8, 1100, 1200.6, 1300, 1400, 1500 };
                 double[] ySrc = { 49.187, 50.953, 52.78, 56.357, 60.085, 63.871, 67.835, 71.927, 76.085, 80.43, 84.86, 89.41, 94.07 };
+                for (var i = 0; i < ySrc.Length; i++)
+                {
+                    ySrc[i] = ySrc[i] * 1000;
+                }
                 return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
             }
             else if (speciesNo == 3)
             {
                 double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
                 double[] ySrc = { 11.701, 14.762, 17.923, 21.179, 24.517, 27.923, 31.386, 34.896, 38.446, 42.026, 45.646, 49.286 };
+                for (var i = 0; i < ySrc.Length; i++)
+                {
+                    ySrc[i] = ySrc[i] * 1000;
+                }
                 return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
             }
             else if (speciesNo == 4)
             {
                 double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
                 double[] ySrc = { 42.02706, 44.97706, 47.92706, 50.88706, 53.86706, 56.87706, 59.92706, 63.00706, 66.14706, 69.32706, 72.54706, 75.82706 };
+                for (var i = 0; i < ySrc.Length; i++)
+                {
+                    ySrc[i] = ySrc[i] * 1000;
+                }
                 return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
             }
             else if (speciesNo == 8)
             {
                 double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
                 double[] ySrc = { 18.5736, 23.6336, 29.0436, 34.7236, 40.6136, 46.6836, 52.9136, 59.2736, 65.7436, 72.3236, 79.0036, 85.7936 };
+                for (var i = 0; i < ySrc.Length; i++)
+                {
+                    ySrc[i] = ySrc[i] * 1000;
+                }
                 return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
             }
             else if (speciesNo == 6)
             {
                 double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
                 double[] ySrc = { 5.772001, 9.632001, 13.702001, 17.952001, 22.382001, 26.952001, 31.662001, 36.482001, 41.412001, 46.422001, 51.522001, 56.702001 };
+                for (var i = 0; i < ySrc.Length; i++)
+                {
+                    ySrc[i] = ySrc[i] * 1000;
+                }
                 return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
             }
             else if (speciesNo == 7)
             {
                 double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
                 double[] ySrc = { 11.638, 14.58, 17.564, 20.607, 23.717, 26.894, 30.135, 33.433, 36.782, 40.177, 43.611, 47.08 };
+                for (var i = 0; i < ySrc.Length; i++)
+                {
+                    ySrc[i] = ySrc[i] * 1000;
+                }
                 return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
             }
             else
