@@ -209,7 +209,7 @@ namespace PAR
             }
 
             //온도 업데이트
-            var X1 = LUdecompotision(K1, b1.ToList(), nSpace - 1);
+            var X1 = LUdecomposition(K1, b1.ToList(), nSpace - 1);
             for (int i = 1; i < nSpace - 1; i++)
             {
                 temperature[timeStep, i] = X1[i];
@@ -235,7 +235,7 @@ namespace PAR
                 b2[i] = 9.81 * (temperature[timeStep, i + 1] - tempInf) / temperature[timeStep, i + 1] + u[timeStep - 1, i + 1] / Dt;
             }
 
-            var X2 = LUdecompotision(K2, b2.ToList(), nSpace);
+            var X2 = LUdecomposition(K2, b2.ToList(), nSpace);
 
             //수정자 u 구하기_upwind
             for (int i = 0; i < nSpace; i++)
@@ -257,7 +257,7 @@ namespace PAR
             }
 
             //속도 업데이트
-            var X3 = LUdecompotision(K3, b3.ToList(), nSpace);
+            var X3 = LUdecomposition(K3, b3.ToList(), nSpace);
             for (int i = 1; i < nSpace; i++)
             {
                 u[timeStep, i] = X3[i];
@@ -285,7 +285,7 @@ namespace PAR
             }
 
             //밀도 업데이트
-            var X4 = LUdecompotision(K4, b4.ToList(), nSpace);
+            var X4 = LUdecomposition(K4, b4.ToList(), nSpace);
             for (int i = 1; i < nSpace; i++)
             {
                 density[timeStep, i] = X4[i];
@@ -549,7 +549,7 @@ namespace PAR
 
         private double CalculateEachHeatCapacity(int timeStep, int spaceStep, int speciesNo)
         {
-            if (speciesNo == 1)
+            /*if (speciesNo == 1)
             {
                 return Polynomial(temperature[timeStep, spaceStep], -1.313e-22, 8.49e-19, -2.39e-15, 3.828e-12, -3.815e-9, 2.423e-6, -0.0009553, 0.2132, 8.625);
             }
@@ -560,6 +560,52 @@ namespace PAR
             else if (speciesNo == 5)
             {
                 return Polynomial(temperature[timeStep, spaceStep], 1.3e-21, -9.267e-18, 2.855e-14, -4.963e-11, 5.326e-8, -3.614e-5, 0.01516, -3.588, 401.3);
+            }
+            else
+            {
+                return 0;
+            }*/
+            if (speciesNo == 1)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 29.189, 29.256, 29.33, 29.46, 29.653, 29.908, 30.222, 30.58, 30.99, 31.42, 31.86, 32.3 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 5)
+            {
+                double[] xSrc = { 400, 449.33, 500.62, 599.79, 700.42, 799.58, 900.21, 1000.8, 1100, 1200.6, 1300, 1400, 1500 };
+                double[] ySrc = { 36.198, 35.597, 35.703, 36.513, 37.598, 38.774, 40.027, 41.304, 42.554, 43.789, 44.94, 46.06, 47.11 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 3)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 30.132, 31.108, 32.103, 32.992, 33.742, 34.363, 34.873, 35.29, 35.66, 35.99, 36.28, 36.55 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 4)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 29.65, 29.51, 29.52, 29.67, 29.92, 30.27, 30.67, 31.12, 31.59, 32.05, 32.5, 32.95 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 8)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 48.65, 52.51, 55.5, 57.92, 59.9, 61.55, 62.95, 64.17, 65.27, 66.3, 67.33, 68.42 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 6)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 37.43, 39.68, 41.68, 43.45, 45.03, 46.42, 47.66, 48.75, 49.73, 50.6, 51.39, 52.11 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 7)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 29.273, 29.594, 30.118, 30.761, 31.439, 32.096, 32.703, 33.248, 33.729, 34.152, 34.522, 34.846 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
             }
             else
             {
@@ -580,7 +626,7 @@ namespace PAR
 
         private double CalculateEachThermalConductivity(int timeStep, int spaceStep, int speciesNo)
         {
-            if (speciesNo == 1)
+            /*if (speciesNo == 1)
             {
                 return Polynomial(temperature[timeStep, spaceStep], 4.716e-23, -2.716e-19, 6.768e-16, -9.528e-13, 8.285e-10, -4.555e-7, 0.0001546, -0.02915, 2.499);
             }
@@ -591,6 +637,52 @@ namespace PAR
             else if (speciesNo == 5)
             {
                 return Polynomial(temperature[timeStep, spaceStep], 1.796e-25, -1.295e-21, 4.062e-18, -7.252e-15, 8.087e-12, -5.813e-9, 2.697e-6, -0.0006474, 0.07913);
+            }
+            else
+            {
+                return 0;
+            }*/
+            if (speciesNo == 1)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 0.23406, 0.2805, 0.32809, 0.37631, 0.42517, 0.47467, 0.5248, 0.57556, 0.62695, 0.67897, 0.73162, 0.7849 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 5)
+            {
+                double[] xSrc = { 400, 449.33, 500.62, 599.79, 700.42, 799.58, 900.21, 1000.8, 1100, 1200.6, 1300, 1400, 1500 };
+                double[] ySrc = { 0.02702, 0.031115, 0.035926, 0.046345, 0.058015, 0.070332, 0.083494, 0.097202, 0.11115, 0.12567, 0.14019, 0.15471, 0.16923 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 3)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 0.034689, 0.04275, 0.050738, 0.058499, 0.065933, 0.072997, 0.079685, 0.086003, 0.091951, 0.097529, 0.102737, 0.107575 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 4)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 0.02702, 0.035926, 0.046345, 0.058015, 0.070332, 0.083494, 0.097202, 0.11115, 0.12567, 0.14019, 0.15471, 0.16923 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 8)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 0.034689, 0.04275, 0.050738, 0.058499, 0.065933, 0.072997, 0.079685, 0.086003, 0.091951, 0.097529, 0.102737, 0.107575 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 6)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 0.034689, 0.04275, 0.050738, 0.058499, 0.065933, 0.072997, 0.079685, 0.086003, 0.091951, 0.097529, 0.102737, 0.107575 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 7)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 0.032205, 0.038143, 0.043917, 0.049605, 0.055197, 0.060666, 0.065991, 0.07116, 0.076173, 0.081038, 0.085763, 0.090361 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
             }
             else
             {
@@ -610,7 +702,7 @@ namespace PAR
 
         private double CalculateEachEnthalpy(int timeStep, int spaceStep, int speciesNo)
         {
-            if (speciesNo == 1)
+            /*if (speciesNo == 1)
             {
                 return Polynomial(temperature[timeStep, spaceStep], 1.616e-19, -8.93e-16, 2.135e-12, -2.885e-9, 2.411e-6, -0.001275, 0.4169, -47.8, 5356);
             }
@@ -625,6 +717,52 @@ namespace PAR
             else
             {
                 return 0;
+            }*/
+            if (speciesNo == 1)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 10.886, 13.809, 16.738, 19.677, 22.632, 25.61, 28.616, 31.656, 34.736, 37.856, 41.016, 44.226 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 5)
+            {
+                double[] xSrc = { 400, 449.33, 500.62, 599.79, 700.42, 799.58, 900.21, 1000.8, 1100, 1200.6, 1300, 1400, 1500 };
+                double[] ySrc = { 49.187, 50.953, 52.78, 56.357, 60.085, 63.871, 67.835, 71.927, 76.085, 80.43, 84.86, 89.41, 94.07 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 3)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 11.701, 14.762, 17.923, 21.179, 24.517, 27.923, 31.386, 34.896, 38.446, 42.026, 45.646, 49.286 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 4)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 42.02706, 44.97706, 47.92706, 50.88706, 53.86706, 56.87706, 59.92706, 63.00706, 66.14706, 69.32706, 72.54706, 75.82706 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 8)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 18.5736, 23.6336, 29.0436, 34.7236, 40.6136, 46.6836, 52.9136, 59.2736, 65.7436, 72.3236, 79.0036, 85.7936 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 6)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 5.772001, 9.632001, 13.702001, 17.952001, 22.382001, 26.952001, 31.662001, 36.482001, 41.412001, 46.422001, 51.522001, 56.702001 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else if (speciesNo == 7)
+            {
+                double[] xSrc = { 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500 };
+                double[] ySrc = { 11.638, 14.58, 17.564, 20.607, 23.717, 26.894, 30.135, 33.433, 36.782, 40.177, 43.611, 47.08 };
+                return MonotonicCubicHermiteSpline(temperature[timeStep, spaceStep], xSrc, ySrc);
+            }
+            else
+            {
+                return 0;
             }
         }
 
@@ -634,7 +772,7 @@ namespace PAR
             return tmp;
         }
 
-        private List<double> LUdecompotision(List<List<double>> K, List<double> P, int size)
+        private List<double> LUdecomposition(List<List<double>> K, List<double> P, int size)
         {
             var a = 0.0;
             for (int i = 1; i < size; i++)
@@ -699,6 +837,16 @@ namespace PAR
             return X.ToList();
         }
 
+        public double[,,] GetH2 => compCTR;
+        public double[,] GetU => u;
+        public double[,] GetTemperature => temperature;
+        
+
+        /*public double GetH2(int i, int j)
+        {
+            return compCTR[i, j, 1];
+        }
+
         public double GetU(int i, int j)
         {
             return u[i, j];
@@ -707,11 +855,88 @@ namespace PAR
         public double GetTemperature(int i, int j)
         {
             return temperature[i, j];
+        }*/
+
+        private double MonotonicCubicHermiteSpline(double x, double[] xSrc, double[] ySrc)
+        {
+            var n = xSrc.Length;
+            double[] m = Enumerable.Repeat<double>(0.0, n).ToArray<double>();
+
+            m[0] = (ySrc[1] - ySrc[0]) / (xSrc[1] - xSrc[0]);
+            m[n - 1] = (ySrc[n - 1] - ySrc[n - 2]) / (xSrc[n - 1] - xSrc[n - 2]);
+
+            for (int k = 1; k < n - 1; k++)
+            {
+                m[k] = (ySrc[k] - ySrc[k - 1]) / (2 * (xSrc[k] - xSrc[k - 1])) + (ySrc[k + 1] - ySrc[k]) / (2 * (xSrc[k + 1] - xSrc[k]));
+            }
+
+            double deltaK1 = 0;
+            for (int k = 0; k < n - 1; k++)
+            {
+                var deltaK = (ySrc[k + 1] - ySrc[k]) / (xSrc[k + 1] - xSrc[k]);
+
+                if (Math.Abs(deltaK) <= 1e-15)
+                {
+                    m[k] = m[k + 1] = 0;
+                }
+                else if (deltaK * deltaK1 < 0)
+                {
+                    m[k] = 0;
+                }
+                else
+                {
+                    double ak = m[k] / deltaK;
+                    double bk = m[k + 1] / deltaK;
+
+                    if (ak * ak + bk * bk > 9)
+                    {
+                        m[k] = 3 / (Math.Sqrt(ak * ak + bk * bk)) * ak * deltaK;
+                        m[k + 1] = 3 / (Math.Sqrt(ak * ak + bk * bk)) * bk * deltaK;
+                    }
+                }
+                deltaK1 = deltaK;
+            }
+
+            int idx = 0;
+
+            // x가 있는 xSrc구간을 구해서 해당하는 xSrc를 cur_x, next_x로 두어야 합니다. 이를통해 y를 구하고 return 합니다.
+            for (int k = 0; k < n - 1; k++)
+            {
+                if (xSrc[k] < x)
+                {
+                    idx += 1;
+                }
+            }
+
+            var curX = xSrc[idx - 1];
+            var nextX = xSrc[idx];
+            var curY = ySrc[idx - 1];
+            var nextY = ySrc[idx];
+            var h = nextX - curX;
+            var t = (x - curX) / h;
+            var y = curY * H00(t) + h * m[idx - 1] * H10(t) + nextY * H01(t) + h * m[idx] * H11(t);
+
+            return y;
         }
 
-        public double GetH2(int i, int j)
+        private double H00(double t)
         {
-            return compCTR[i, j, 1];
+            return 2 * t * t * t - 3 * t * t + 1;
+        }
+
+        private double H10(double t)
+        {
+            return t * (1 - t) * (1 - t);
+        }
+
+        private double H01(double t)
+        {
+            return t * t * (3 - 2 * t);
+        }
+
+        private double H11(double t)
+        {
+            return t * t * (t - 1);
         }
     }
 }
