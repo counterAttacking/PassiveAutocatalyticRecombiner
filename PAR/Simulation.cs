@@ -13,7 +13,7 @@ namespace PAR
     {
         private int nTime, nSpace, sequence;
         private double Vk, A, Dt, dx, pressure = 1, tempInf;
-        private double[] time, space, Wk;
+        private double[] time, space, Wk, uPredict;
         private double[,] density, u, temperature;
         private double[,,] compCTR, wDot, Yk;
 
@@ -32,12 +32,13 @@ namespace PAR
             time = Enumerable.Repeat<double>(0.0, nTime + 1).ToArray<double>();
             space = Enumerable.Repeat<double>(0.0, nTime + 1).ToArray<double>();
             Wk = Enumerable.Repeat<double>(0.0, nTime + 1).ToArray<double>();
-            density = new double[nTime + 1, nSpace + 1];
-            u = new double[nTime + 1, nSpace + 1];
+            density = new double[nTime, nSpace];
+            u = new double[nTime, nSpace];
             temperature = new double[nTime + 1, nSpace + 1];
             compCTR = new double[nTime + 1, nSpace + 1, 15];
             wDot = new double[nTime + 1, nSpace + 1, 15];
             Yk = new double[nTime + 1, nSpace + 1, 15];
+            uPredict = new double[nSpace];
 
             Vk = 0;
             this.nTime = nTime;
@@ -69,28 +70,31 @@ namespace PAR
                 }
             }
 
+            // Velocity & Density & Temperature SetValue
+            for (int i = 0; i < nSpace; i++)
+            {
+                this.u[0, i] = 0.02;
+                this.density[0, i] = density;
+                this.temperature[0, i] = temperature;
+            }
+
+            for (int i = 0; i < nTime; i++)
+            {
+                this.u[i, 0] = 0.02;
+                this.density[i, 0] = density;
+                this.temperature[i, 0] = temperature;
+            }
+
             for (int i = 0; i < nTime + 1; i++)
             {
                 time[i] = 0;
-                /*this.compCTR.Add(new List<List<double>>());
-                this.Yk.Add(new List<List<double>>());
-                this.wDot.Add(new List<List<double>>());*/
-
                 for (int j = 0; j < nSpace + 1; j++)
                 {
-                    this.density[i, j] = density;
-                    this.u[i, j] = 0.0;
-                    this.temperature[i, j] = temperature;
-                    //this.wDot[i].Add(new List<double>());
-                    Vk = 0;
-
                     if (i == 0)
                     {
                         space[j] = 0;
                     }
 
-                    /*this.compCTR[i].Add(new List<double>());
-                    this.Yk[i].Add(new List<double>());*/
                     for (int k = 0; k < 10; k++)
                     {
                         if (k == 1)
@@ -120,12 +124,12 @@ namespace PAR
                         else
                         {
                             //this.compCTR[i][j].Add(0);
-                            this.compCTR[i, j, k] = 0.0;
+                            this.compCTR[i, j, k] = 1.0;
                         }
                         /*this.Yk[i][j].Add(0);
                         this.wDot[i][j].Add(0);*/
-                        this.Yk[i, j, k] = 0.0;
-                        this.wDot[i, j, k] = 0.0;
+                        this.Yk[i, j, k] = 1.0;
+                        this.wDot[i, j, k] = 1.0;
                     }
                 }
             }
@@ -888,6 +892,72 @@ namespace PAR
         private double H11(double t)
         {
             return t * t * (t - 1);
+        }
+
+        public void Setvalue()
+        {
+
+        }
+
+        public void Manage()
+        {
+            for (int i = 1; i < nTime; i++)
+            {
+                Momentum(i);
+                Continuity(i);
+            }
+        }
+
+        private void Momentum(int time)
+        {
+            for (int i = 1; i < nSpace; i++)
+            {
+                uPredict[i] = 9.81 * (temperature[time - 1, i] - tempInf) * Dt + (1 - (Dt / dx) * (u[time - 1, i] - u[time - 1, i - 1])) * u[time - 1, i];
+            }
+            for (int i = 1; i < nSpace; i++)
+            {
+                u[time, i] = 0.5 * uPredict[i] + 9.81 * (temperature[time - 1, i] - tempInf) * Dt + (0.5 - (Dt / dx) * (u[time - 1, i] - u[time - 1, i - 1])) * u[time - 1, i];
+            }
+        }
+
+        private void Continuity(int time)
+        {
+            double a, b, c, d;
+            for (int i = 1; i < nSpace; i++)
+            {
+                a = 1 + (Dt / (2 * dx)) * u[time, i];
+                b = (Dt / (2 * dx)) * u[time, i - 1];
+                c = 1 + (Dt / (2 * dx)) * u[time - 1, i];
+                d = (Dt / (2 * dx)) * u[time - 1, i - 1];
+                density[time, i] = (1 / a) * (b * density[time, i - 1] + c * density[time - 1, i] + d * density[time - 1, i - 1]);
+            }
+        }
+
+        private void Species(int time)
+        {
+            // Prediction
+            var YkPredict = new double[nSpace, 7];
+            for (int i = 1; i < nSpace; i++)
+            {
+                for (int j = 0; j < 7; j++)
+                {
+                    YkPredict[i, j] = Yk[time - 1, i, j] - Dt * u[time - 1, i] * (Yk[time - 1, i, j] - Yk[time - 1, i, j] - Yk[time - 1, i - 1, j]) / dx - Dt * wDot[time - 1, i, j] * compCTR[time - 1, i, j] / density[time - 1, i];
+                }
+            }
+
+            // Correction
+            for (int i = 1; i < nSpace; i++)
+            {
+                for (int j = 0; j < 7; j++)
+                {
+                    Yk[time, i, j] = YkPredict[i, j] - Dt * u[time, i] * (YkPredict[i, j] - YkPredict[i - 1, j]) / dx - Dt * wDot[time - 1, i, j] * compCTR[time - 1, i, j] / density[time, i];
+                }
+            }
+        }
+
+        private void Energy(int time)
+        {
+
         }
     }
 }
