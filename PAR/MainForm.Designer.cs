@@ -35,6 +35,8 @@
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.pnlMain = new System.Windows.Forms.Panel();
             this.tabControl1 = new System.Windows.Forms.TabControl();
+            this.tsmiClose = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpHToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.pnlMain.SuspendLayout();
             this.SuspendLayout();
@@ -44,7 +46,8 @@
             this.menuStrip1.Font = new System.Drawing.Font("맑은 고딕", 12F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.fileFToolStripMenuItem});
+            this.fileFToolStripMenuItem,
+            this.helpHToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(800, 29);
@@ -54,7 +57,8 @@
             // fileFToolStripMenuItem
             // 
             this.fileFToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tsmiNewSimulation});
+            this.tsmiNewSimulation,
+            this.tsmiClose});
             this.fileFToolStripMenuItem.Name = "fileFToolStripMenuItem";
             this.fileFToolStripMenuItem.Size = new System.Drawing.Size(67, 25);
             this.fileFToolStripMenuItem.Text = "File(&F)";
@@ -97,6 +101,19 @@
             this.tabControl1.SizeMode = System.Windows.Forms.TabSizeMode.Fixed;
             this.tabControl1.TabIndex = 0;
             // 
+            // tsmiClose
+            // 
+            this.tsmiClose.Name = "tsmiClose";
+            this.tsmiClose.Size = new System.Drawing.Size(227, 26);
+            this.tsmiClose.Text = "Close(&C)";
+            this.tsmiClose.Click += new System.EventHandler(this.TsmiClose_Click);
+            // 
+            // helpHToolStripMenuItem
+            // 
+            this.helpHToolStripMenuItem.Name = "helpHToolStripMenuItem";
+            this.helpHToolStripMenuItem.Size = new System.Drawing.Size(81, 25);
+            this.helpHToolStripMenuItem.Text = "Help(&H)";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 12F);
@@ -126,5 +143,7 @@
         private System.Windows.Forms.Panel pnlMain;
         private System.Windows.Forms.ToolStripMenuItem tsmiNewSimulation;
         private System.Windows.Forms.TabControl tabControl1;
+        private System.Windows.Forms.ToolStripMenuItem tsmiClose;
+        private System.Windows.Forms.ToolStripMenuItem helpHToolStripMenuItem;
     }
 }

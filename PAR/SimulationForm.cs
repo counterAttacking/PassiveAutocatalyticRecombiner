@@ -41,18 +41,27 @@ namespace PAR
 
         private void TsmiRunSimulation_Click(object sender, EventArgs e)
         {
-            tsmiInputValues.Enabled = false;
-            tsmiRunSimulation.Enabled = false;
-            tslblStatus.Text = "Simulation Running!!!";
+            try
+            {
+                tsmiInputValues.Enabled = false;
+                tsmiRunSimulation.Enabled = false;
+                tslblStatus.Text = "Simulation Running!!!";
 
-            simulation = new Simulation(inputTimeStep, inputSpaceStep, inputDt, 0.005);
-            simulation.InitSetting(1, inputTemperature, inputH2Rate, 0);
-            simulation.Run(inputTimeStep, inputDt);
-            ShowResult();
-
-            tsmiInputValues.Enabled = true;
-            tsmiRunSimulation.Enabled = true;
-            tslblStatus.Text = "Simulation Completed!!!";
+                simulation = new Simulation(inputTimeStep, inputSpaceStep, inputDt, 0.005);
+                simulation.InitSetting(1, inputTemperature, inputH2Rate, 0);
+                simulation.Run(inputTimeStep, inputDt);
+                ShowResult();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.ToString(), "", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                tsmiInputValues.Enabled = true;
+                tsmiRunSimulation.Enabled = true;
+                tslblStatus.Text = "Simulation Completed!!!";
+            }
         }
 
         public void IsReadyDone()

@@ -184,6 +184,16 @@ namespace PAR
                 }
             }
 
+            for (int i = 0; i < nSpace; i++)
+            {
+                for (int j = 0; j < nSpace; j++)
+                {
+                    K2[i][j] = 0.0;
+                    K3[i][j] = 0.0;
+                    K4[i][j] = 0.0;
+                }
+            }
+
             K1[0][0] = density[timeStep - 1, 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx;
             K1[0][1] = density[timeStep - 1, 1] * A * u[timeStep - 1, 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx;
             b1[0] = density[timeStep - 1, 1] * A * temperature[timeStep - 1, 1] / Dt - CalculateChemicalReaction(timeStep - 1, 1) - (-density[timeStep - 1, 1] * u[timeStep - 1, 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx) * temperature[timeStep - 1, 0];
@@ -217,14 +227,6 @@ namespace PAR
 
             //Momentum equation 
             //에측자 uprime 구하기_upwind
-            for (int i = 0; i < nSpace; i++)
-            {
-                for (int j = 0; j < nSpace; j++)
-                {
-                    K2[i][j] = 0.0;
-                }
-            }
-
             K2[0][0] = 1 / Dt + u[timeStep - 1, 1] / dx;
             b2[0] = 9.81 * (temperature[timeStep, 1] - tempInf) / temperature[timeStep, 1] + u[timeStep - 1, 1] / Dt + (u[timeStep - 1, 1] / dx) * u[timeStep - 1, 0];
 
@@ -238,14 +240,6 @@ namespace PAR
             var X2 = LUdecomposition(K2, b2.ToList(), nSpace);
 
             //수정자 u 구하기_upwind
-            for (int i = 0; i < nSpace; i++)
-            {
-                for (int j = 0; j < nSpace; j++)
-                {
-                    K3[i][j] = 0.0;
-                }
-            }
-
             K3[0][0] = 1 / Dt + u[timeStep - 1, 1] / dx;
             b3[0] = 9.81 * (temperature[timeStep, 1] - tempInf) / temperature[timeStep, 1] + (u[timeStep - 1, 1] + X2[0]) * 0.5 / Dt + (u[timeStep - 1, 1] / dx) * u[timeStep - 1, 0];
 
@@ -266,14 +260,6 @@ namespace PAR
             u[timeStep, nSpace] = u[timeStep, nSpace - 1]; //JY 추가
 
             //Continuity_upwind
-            for (int i = 0; i < nSpace; i++)
-            {
-                for (int j = 0; j < nSpace; j++)
-                {
-                    K4[i][j] = 0.0;
-                }
-            }
-
             K4[0][0] = 1 / Dt - u[timeStep, 1] / dx;
             b4[0] = density[timeStep - 1, 1] / Dt - (u[timeStep, 0] / Dt) * density[timeStep - 1, 0];
 

@@ -33,5 +33,10 @@ namespace PAR
             tabControl1.TabPages[tabControl1.TabPages.Count - 1].Controls.Add(frm);
             tabControl1.SelectedTab = tabControl1.TabPages[tabControl1.TabPages.Count - 1];
         }
+
+        private void TsmiClose_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
     }
 }
