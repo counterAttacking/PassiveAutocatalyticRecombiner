@@ -28,42 +28,43 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle13 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle14 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle15 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle16 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle17 = new System.Windows.Forms.DataGridViewCellStyle();
-            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle18 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle1 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle2 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle3 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle4 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle5 = new System.Windows.Forms.DataGridViewCellStyle();
+            System.Windows.Forms.DataGridViewCellStyle dataGridViewCellStyle6 = new System.Windows.Forms.DataGridViewCellStyle();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.tsmiInputValues = new System.Windows.Forms.ToolStripMenuItem();
             this.tsmiRunSimulation = new System.Windows.Forms.ToolStripMenuItem();
+            this.tsmiViewChart = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
+            this.tslblStatus = new System.Windows.Forms.ToolStripStatusLabel();
             this.pnlMain = new System.Windows.Forms.Panel();
-            this.pnlSection1 = new System.Windows.Forms.Panel();
-            this.dgvU = new System.Windows.Forms.DataGridView();
-            this.pnlSection1Header = new System.Windows.Forms.Panel();
-            this.label1 = new System.Windows.Forms.Label();
-            this.pnlSection2 = new System.Windows.Forms.Panel();
-            this.dgvTemperature = new System.Windows.Forms.DataGridView();
-            this.pnlSection2Header = new System.Windows.Forms.Panel();
-            this.label2 = new System.Windows.Forms.Label();
             this.pnlSection3 = new System.Windows.Forms.Panel();
             this.dgvH2Rate = new System.Windows.Forms.DataGridView();
             this.pnlSection3Header = new System.Windows.Forms.Panel();
             this.label3 = new System.Windows.Forms.Label();
-            this.tslblStatus = new System.Windows.Forms.ToolStripStatusLabel();
+            this.pnlSection2 = new System.Windows.Forms.Panel();
+            this.dgvTemperature = new System.Windows.Forms.DataGridView();
+            this.pnlSection2Header = new System.Windows.Forms.Panel();
+            this.label2 = new System.Windows.Forms.Label();
+            this.pnlSection1 = new System.Windows.Forms.Panel();
+            this.dgvU = new System.Windows.Forms.DataGridView();
+            this.pnlSection1Header = new System.Windows.Forms.Panel();
+            this.label1 = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
             this.statusStrip1.SuspendLayout();
             this.pnlMain.SuspendLayout();
-            this.pnlSection1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvU)).BeginInit();
-            this.pnlSection1Header.SuspendLayout();
-            this.pnlSection2.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dgvTemperature)).BeginInit();
-            this.pnlSection2Header.SuspendLayout();
             this.pnlSection3.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dgvH2Rate)).BeginInit();
             this.pnlSection3Header.SuspendLayout();
+            this.pnlSection2.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvTemperature)).BeginInit();
+            this.pnlSection2Header.SuspendLayout();
+            this.pnlSection1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.dgvU)).BeginInit();
+            this.pnlSection1Header.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -73,7 +74,8 @@
             this.menuStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tsmiInputValues,
-            this.tsmiRunSimulation});
+            this.tsmiRunSimulation,
+            this.tsmiViewChart});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Padding = new System.Windows.Forms.Padding(5, 2, 0, 2);
@@ -97,6 +99,14 @@
             this.tsmiRunSimulation.Text = "Run Simulation";
             this.tsmiRunSimulation.Click += new System.EventHandler(this.TsmiRunSimulation_Click);
             // 
+            // tsmiViewChart
+            // 
+            this.tsmiViewChart.ForeColor = System.Drawing.Color.White;
+            this.tsmiViewChart.Name = "tsmiViewChart";
+            this.tsmiViewChart.Size = new System.Drawing.Size(122, 29);
+            this.tsmiViewChart.Text = "View Chart";
+            this.tsmiViewChart.Click += new System.EventHandler(this.TsmiViewChart_Click);
+            // 
             // statusStrip1
             // 
             this.statusStrip1.ImageScalingSize = new System.Drawing.Size(20, 20);
@@ -108,6 +118,12 @@
             this.statusStrip1.Size = new System.Drawing.Size(788, 22);
             this.statusStrip1.TabIndex = 1;
             this.statusStrip1.Text = "statusStrip1";
+            // 
+            // tslblStatus
+            // 
+            this.tslblStatus.Font = new System.Drawing.Font("맑은 고딕", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
+            this.tslblStatus.Name = "tslblStatus";
+            this.tslblStatus.Size = new System.Drawing.Size(0, 17);
             // 
             // pnlMain
             // 
@@ -122,132 +138,14 @@
             this.pnlMain.Size = new System.Drawing.Size(788, 545);
             this.pnlMain.TabIndex = 2;
             // 
-            // pnlSection1
-            // 
-            this.pnlSection1.Controls.Add(this.dgvU);
-            this.pnlSection1.Controls.Add(this.pnlSection1Header);
-            this.pnlSection1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlSection1.Location = new System.Drawing.Point(0, 0);
-            this.pnlSection1.Name = "pnlSection1";
-            this.pnlSection1.Size = new System.Drawing.Size(771, 300);
-            this.pnlSection1.TabIndex = 0;
-            // 
-            // dgvU
-            // 
-            this.dgvU.AllowUserToAddRows = false;
-            this.dgvU.AllowUserToDeleteRows = false;
-            this.dgvU.BackgroundColor = System.Drawing.SystemColors.Control;
-            this.dgvU.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            dataGridViewCellStyle13.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle13.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(110)))));
-            dataGridViewCellStyle13.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle13.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle13.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle13.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle13.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvU.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle13;
-            this.dgvU.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvU.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvU.Location = new System.Drawing.Point(0, 50);
-            this.dgvU.Name = "dgvU";
-            this.dgvU.ReadOnly = true;
-            this.dgvU.RowHeadersVisible = false;
-            this.dgvU.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-            dataGridViewCellStyle14.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle14.Font = new System.Drawing.Font("굴림", 14.25F, System.Drawing.FontStyle.Bold);
-            this.dgvU.RowsDefaultCellStyle = dataGridViewCellStyle14;
-            this.dgvU.RowTemplate.Height = 23;
-            this.dgvU.Size = new System.Drawing.Size(771, 250);
-            this.dgvU.TabIndex = 1;
-            // 
-            // pnlSection1Header
-            // 
-            this.pnlSection1Header.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.pnlSection1Header.Controls.Add(this.label1);
-            this.pnlSection1Header.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlSection1Header.Location = new System.Drawing.Point(0, 0);
-            this.pnlSection1Header.Name = "pnlSection1Header";
-            this.pnlSection1Header.Size = new System.Drawing.Size(771, 50);
-            this.pnlSection1Header.TabIndex = 0;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Font = new System.Drawing.Font("Times New Roman", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label1.ForeColor = System.Drawing.Color.White;
-            this.label1.Location = new System.Drawing.Point(24, 11);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(198, 31);
-            this.label1.TabIndex = 1;
-            this.label1.Text = "The Result of U";
-            // 
-            // pnlSection2
-            // 
-            this.pnlSection2.Controls.Add(this.dgvTemperature);
-            this.pnlSection2.Controls.Add(this.pnlSection2Header);
-            this.pnlSection2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlSection2.Location = new System.Drawing.Point(0, 300);
-            this.pnlSection2.Name = "pnlSection2";
-            this.pnlSection2.Size = new System.Drawing.Size(771, 300);
-            this.pnlSection2.TabIndex = 1;
-            // 
-            // dgvTemperature
-            // 
-            this.dgvTemperature.AllowUserToAddRows = false;
-            this.dgvTemperature.AllowUserToDeleteRows = false;
-            this.dgvTemperature.BackgroundColor = System.Drawing.SystemColors.Control;
-            this.dgvTemperature.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            dataGridViewCellStyle15.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle15.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(110)))));
-            dataGridViewCellStyle15.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle15.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle15.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle15.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle15.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvTemperature.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle15;
-            this.dgvTemperature.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dgvTemperature.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dgvTemperature.Location = new System.Drawing.Point(0, 50);
-            this.dgvTemperature.Name = "dgvTemperature";
-            this.dgvTemperature.ReadOnly = true;
-            this.dgvTemperature.RowHeadersVisible = false;
-            this.dgvTemperature.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-            dataGridViewCellStyle16.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle16.Font = new System.Drawing.Font("굴림", 14.25F, System.Drawing.FontStyle.Bold);
-            this.dgvTemperature.RowsDefaultCellStyle = dataGridViewCellStyle16;
-            this.dgvTemperature.RowTemplate.Height = 23;
-            this.dgvTemperature.Size = new System.Drawing.Size(771, 250);
-            this.dgvTemperature.TabIndex = 1;
-            // 
-            // pnlSection2Header
-            // 
-            this.pnlSection2Header.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
-            this.pnlSection2Header.Controls.Add(this.label2);
-            this.pnlSection2Header.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlSection2Header.Location = new System.Drawing.Point(0, 0);
-            this.pnlSection2Header.Name = "pnlSection2Header";
-            this.pnlSection2Header.Size = new System.Drawing.Size(771, 50);
-            this.pnlSection2Header.TabIndex = 0;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Font = new System.Drawing.Font("Times New Roman", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.label2.ForeColor = System.Drawing.Color.White;
-            this.label2.Location = new System.Drawing.Point(24, 11);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(329, 31);
-            this.label2.TabIndex = 1;
-            this.label2.Text = "The Result of Temperature";
-            // 
             // pnlSection3
             // 
             this.pnlSection3.Controls.Add(this.dgvH2Rate);
             this.pnlSection3.Controls.Add(this.pnlSection3Header);
             this.pnlSection3.Dock = System.Windows.Forms.DockStyle.Top;
-            this.pnlSection3.Location = new System.Drawing.Point(0, 600);
+            this.pnlSection3.Location = new System.Drawing.Point(0, 1000);
             this.pnlSection3.Name = "pnlSection3";
-            this.pnlSection3.Size = new System.Drawing.Size(771, 300);
+            this.pnlSection3.Size = new System.Drawing.Size(771, 500);
             this.pnlSection3.TabIndex = 2;
             // 
             // dgvH2Rate
@@ -256,14 +154,14 @@
             this.dgvH2Rate.AllowUserToDeleteRows = false;
             this.dgvH2Rate.BackgroundColor = System.Drawing.SystemColors.Control;
             this.dgvH2Rate.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            dataGridViewCellStyle17.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle17.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(110)))));
-            dataGridViewCellStyle17.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold);
-            dataGridViewCellStyle17.ForeColor = System.Drawing.Color.White;
-            dataGridViewCellStyle17.SelectionBackColor = System.Drawing.SystemColors.Highlight;
-            dataGridViewCellStyle17.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
-            dataGridViewCellStyle17.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
-            this.dgvH2Rate.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle17;
+            dataGridViewCellStyle1.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle1.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(110)))));
+            dataGridViewCellStyle1.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle1.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle1.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle1.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle1.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvH2Rate.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle1;
             this.dgvH2Rate.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
             this.dgvH2Rate.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dgvH2Rate.Location = new System.Drawing.Point(0, 50);
@@ -271,11 +169,11 @@
             this.dgvH2Rate.ReadOnly = true;
             this.dgvH2Rate.RowHeadersVisible = false;
             this.dgvH2Rate.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
-            dataGridViewCellStyle18.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
-            dataGridViewCellStyle18.Font = new System.Drawing.Font("굴림", 14.25F, System.Drawing.FontStyle.Bold);
-            this.dgvH2Rate.RowsDefaultCellStyle = dataGridViewCellStyle18;
+            dataGridViewCellStyle2.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle2.Font = new System.Drawing.Font("굴림", 14.25F, System.Drawing.FontStyle.Bold);
+            this.dgvH2Rate.RowsDefaultCellStyle = dataGridViewCellStyle2;
             this.dgvH2Rate.RowTemplate.Height = 23;
-            this.dgvH2Rate.Size = new System.Drawing.Size(771, 250);
+            this.dgvH2Rate.Size = new System.Drawing.Size(771, 450);
             this.dgvH2Rate.TabIndex = 1;
             // 
             // pnlSection3Header
@@ -299,11 +197,123 @@
             this.label3.TabIndex = 1;
             this.label3.Text = "The Result of H₂ Rate";
             // 
-            // tslblStatus
+            // pnlSection2
             // 
-            this.tslblStatus.Font = new System.Drawing.Font("맑은 고딕", 14.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(129)));
-            this.tslblStatus.Name = "tslblStatus";
-            this.tslblStatus.Size = new System.Drawing.Size(0, 17);
+            this.pnlSection2.Controls.Add(this.dgvTemperature);
+            this.pnlSection2.Controls.Add(this.pnlSection2Header);
+            this.pnlSection2.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlSection2.Location = new System.Drawing.Point(0, 500);
+            this.pnlSection2.Name = "pnlSection2";
+            this.pnlSection2.Size = new System.Drawing.Size(771, 500);
+            this.pnlSection2.TabIndex = 1;
+            // 
+            // dgvTemperature
+            // 
+            this.dgvTemperature.AllowUserToAddRows = false;
+            this.dgvTemperature.AllowUserToDeleteRows = false;
+            this.dgvTemperature.BackgroundColor = System.Drawing.SystemColors.Control;
+            this.dgvTemperature.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            dataGridViewCellStyle3.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle3.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(110)))));
+            dataGridViewCellStyle3.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle3.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle3.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle3.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle3.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvTemperature.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle3;
+            this.dgvTemperature.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvTemperature.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvTemperature.Location = new System.Drawing.Point(0, 50);
+            this.dgvTemperature.Name = "dgvTemperature";
+            this.dgvTemperature.ReadOnly = true;
+            this.dgvTemperature.RowHeadersVisible = false;
+            this.dgvTemperature.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            dataGridViewCellStyle4.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle4.Font = new System.Drawing.Font("굴림", 14.25F, System.Drawing.FontStyle.Bold);
+            this.dgvTemperature.RowsDefaultCellStyle = dataGridViewCellStyle4;
+            this.dgvTemperature.RowTemplate.Height = 23;
+            this.dgvTemperature.Size = new System.Drawing.Size(771, 450);
+            this.dgvTemperature.TabIndex = 1;
+            // 
+            // pnlSection2Header
+            // 
+            this.pnlSection2Header.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.pnlSection2Header.Controls.Add(this.label2);
+            this.pnlSection2Header.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlSection2Header.Location = new System.Drawing.Point(0, 0);
+            this.pnlSection2Header.Name = "pnlSection2Header";
+            this.pnlSection2Header.Size = new System.Drawing.Size(771, 50);
+            this.pnlSection2Header.TabIndex = 0;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Font = new System.Drawing.Font("Times New Roman", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label2.ForeColor = System.Drawing.Color.White;
+            this.label2.Location = new System.Drawing.Point(24, 11);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(329, 31);
+            this.label2.TabIndex = 1;
+            this.label2.Text = "The Result of Temperature";
+            // 
+            // pnlSection1
+            // 
+            this.pnlSection1.Controls.Add(this.dgvU);
+            this.pnlSection1.Controls.Add(this.pnlSection1Header);
+            this.pnlSection1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlSection1.Location = new System.Drawing.Point(0, 0);
+            this.pnlSection1.Name = "pnlSection1";
+            this.pnlSection1.Size = new System.Drawing.Size(771, 500);
+            this.pnlSection1.TabIndex = 0;
+            // 
+            // dgvU
+            // 
+            this.dgvU.AllowUserToAddRows = false;
+            this.dgvU.AllowUserToDeleteRows = false;
+            this.dgvU.BackgroundColor = System.Drawing.SystemColors.Control;
+            this.dgvU.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            dataGridViewCellStyle5.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle5.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(110)))), ((int)(((byte)(110)))), ((int)(((byte)(110)))));
+            dataGridViewCellStyle5.Font = new System.Drawing.Font("Arial", 11.25F, System.Drawing.FontStyle.Bold);
+            dataGridViewCellStyle5.ForeColor = System.Drawing.Color.White;
+            dataGridViewCellStyle5.SelectionBackColor = System.Drawing.SystemColors.Highlight;
+            dataGridViewCellStyle5.SelectionForeColor = System.Drawing.SystemColors.HighlightText;
+            dataGridViewCellStyle5.WrapMode = System.Windows.Forms.DataGridViewTriState.True;
+            this.dgvU.ColumnHeadersDefaultCellStyle = dataGridViewCellStyle5;
+            this.dgvU.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dgvU.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dgvU.Location = new System.Drawing.Point(0, 50);
+            this.dgvU.Name = "dgvU";
+            this.dgvU.ReadOnly = true;
+            this.dgvU.RowHeadersVisible = false;
+            this.dgvU.RowHeadersWidthSizeMode = System.Windows.Forms.DataGridViewRowHeadersWidthSizeMode.DisableResizing;
+            dataGridViewCellStyle6.Alignment = System.Windows.Forms.DataGridViewContentAlignment.MiddleCenter;
+            dataGridViewCellStyle6.Font = new System.Drawing.Font("굴림", 14.25F, System.Drawing.FontStyle.Bold);
+            this.dgvU.RowsDefaultCellStyle = dataGridViewCellStyle6;
+            this.dgvU.RowTemplate.Height = 23;
+            this.dgvU.Size = new System.Drawing.Size(771, 450);
+            this.dgvU.TabIndex = 1;
+            // 
+            // pnlSection1Header
+            // 
+            this.pnlSection1Header.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(90)))), ((int)(((byte)(90)))), ((int)(((byte)(90)))));
+            this.pnlSection1Header.Controls.Add(this.label1);
+            this.pnlSection1Header.Dock = System.Windows.Forms.DockStyle.Top;
+            this.pnlSection1Header.Location = new System.Drawing.Point(0, 0);
+            this.pnlSection1Header.Name = "pnlSection1Header";
+            this.pnlSection1Header.Size = new System.Drawing.Size(771, 50);
+            this.pnlSection1Header.TabIndex = 0;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Font = new System.Drawing.Font("Times New Roman", 20.25F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.label1.ForeColor = System.Drawing.Color.White;
+            this.label1.Location = new System.Drawing.Point(24, 11);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(271, 31);
+            this.label1.TabIndex = 1;
+            this.label1.Text = "The Result of Velocity";
             // 
             // SimulationForm
             // 
@@ -326,18 +336,18 @@
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
             this.pnlMain.ResumeLayout(false);
-            this.pnlSection1.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvU)).EndInit();
-            this.pnlSection1Header.ResumeLayout(false);
-            this.pnlSection1Header.PerformLayout();
-            this.pnlSection2.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)(this.dgvTemperature)).EndInit();
-            this.pnlSection2Header.ResumeLayout(false);
-            this.pnlSection2Header.PerformLayout();
             this.pnlSection3.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dgvH2Rate)).EndInit();
             this.pnlSection3Header.ResumeLayout(false);
             this.pnlSection3Header.PerformLayout();
+            this.pnlSection2.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvTemperature)).EndInit();
+            this.pnlSection2Header.ResumeLayout(false);
+            this.pnlSection2Header.PerformLayout();
+            this.pnlSection1.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dgvU)).EndInit();
+            this.pnlSection1Header.ResumeLayout(false);
+            this.pnlSection1Header.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -363,5 +373,6 @@
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.ToolStripStatusLabel tslblStatus;
+        private System.Windows.Forms.ToolStripMenuItem tsmiViewChart;
     }
 }

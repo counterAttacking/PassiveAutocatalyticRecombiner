@@ -22,13 +22,14 @@ namespace PAR
         public int inputSpaceStep;
         public double inputDt;
         public bool isReady = false;
+        private bool isCompleted = false;
 
         public SimulationForm()
         {
             InitializeComponent();
         }
 
-        private void SimulationForm_Load(object sender,EventArgs e)
+        private void SimulationForm_Load(object sender, EventArgs e)
         {
             tslblStatus.Text = "Please Input all values";
         }
@@ -45,6 +46,7 @@ namespace PAR
             {
                 tsmiInputValues.Enabled = false;
                 tsmiRunSimulation.Enabled = false;
+                tsmiViewChart.Enabled = false;
                 tslblStatus.Text = "Simulation Running!!!";
 
                 simulation = new Simulation(inputTimeStep, inputSpaceStep, inputDt, 0.005);
@@ -60,13 +62,31 @@ namespace PAR
             {
                 tsmiInputValues.Enabled = true;
                 tsmiRunSimulation.Enabled = true;
+                tsmiViewChart.Enabled = true;
                 tslblStatus.Text = "Simulation Completed!!!";
+            }
+        }
+
+        private void TsmiViewChart_Click(object sender, EventArgs e)
+        {
+            if (isCompleted == true)
+            {
+                var u = simulation.GetU;
+                var temperature = simulation.GetTemperature;
+                var compCTR = simulation.GetH2;
+                var frm = new SimulationChartForm(u, temperature, compCTR, inputTimeStep, inputSpaceStep, inputDt);
+                frm.Show();
+            }
+            else
+            {
+                var frm = new SimulationChartForm();
+                frm.Show();
             }
         }
 
         public void IsReadyDone()
         {
-            if(isReady==true)
+            if (isReady == true)
             {
                 tslblStatus.Text = "Ready Done!!!";
             }
@@ -81,6 +101,7 @@ namespace PAR
             ShowResultPart1();
             ShowResultPart2();
             ShowResultPart3();
+            isCompleted = true;
         }
 
         private void ShowResultPart1()
@@ -107,6 +128,7 @@ namespace PAR
                 for (int j = 1; j < (inputSpaceStep + 1); j++)
                 {
                     dgvU[j, i].Value = string.Format("{0:0.00E+0}", u[i, j]);
+                    //gphVelocity.Series["Series1"].Points.AddXY(string.Format("{0:0.00E+0}", (i + 1) * inputDt), string.Format("{0:0.00E+0}", u[i, j]));
                 }
             }
         }
