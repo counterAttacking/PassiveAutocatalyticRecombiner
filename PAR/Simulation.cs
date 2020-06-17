@@ -13,8 +13,8 @@ namespace PAR
     {
         private int nTime, nSpace, sequence;
         private double Vk, A, Dt, dx, pressure = 1, tempInf;
-        private double[] time, space, Wk, uPredict;
-        private double[,] density, u, temperature;
+        private double[] time, space, Wk;
+        private double[,] density, u, temperature, uPredict;
         private double[,,] compCTR, wDot, Yk;
 
         private double[,] K1;
@@ -32,13 +32,14 @@ namespace PAR
             time = Enumerable.Repeat<double>(0.0, nTime + 1).ToArray<double>();
             space = Enumerable.Repeat<double>(0.0, nTime + 1).ToArray<double>();
             Wk = Enumerable.Repeat<double>(0.0, nTime + 1).ToArray<double>();
-            density = new double[nTime, nSpace];
-            u = new double[nTime, nSpace];
+            density = new double[nTime + 1, nSpace + 1];
+            u = new double[nTime + 1, nSpace + 1];
             temperature = new double[nTime + 1, nSpace + 1];
             compCTR = new double[nTime + 1, nSpace + 1, 15];
             wDot = new double[nTime + 1, nSpace + 1, 15];
             Yk = new double[nTime + 1, nSpace + 1, 15];
-            uPredict = new double[nSpace];
+            uPredict = new double[nTime + 1, nSpace + 1];
+
 
             Vk = 0;
             this.nTime = nTime;
@@ -135,9 +136,9 @@ namespace PAR
             }
 
             K1 = new double[nSpace - 1, nSpace - 1];
-            K2 = new double[nSpace, nSpace];
+            /*K2 = new double[nSpace, nSpace];
             K3 = new double[nSpace, nSpace];
-            K4 = new double[nSpace, nSpace];
+            K4 = new double[nSpace, nSpace];*/
 
             for (int i = 0; i < nSpace - 1; i++)
             {
@@ -146,7 +147,7 @@ namespace PAR
                     K1[i, j] = 0.0;
                 }
             }
-            for (int i = 0; i < nSpace; i++)
+            /*for (int i = 0; i < nSpace; i++)
             {
                 for (int j = 0; j < nSpace; j++)
                 {
@@ -154,7 +155,7 @@ namespace PAR
                     K3[i, j] = 0.0;
                     K4[i, j] = 0.0;
                 }
-            }
+            }*/
         }
 
         public void Run(int targetStep, double Dt)
@@ -163,22 +164,37 @@ namespace PAR
             var tmpSequence = sequence;
             for (int i = tmpSequence; i < tmpSequence + targetStep; i++, sequence++)
             {
-                Thread.Sleep(1);
+                /*Thread.Sleep(1);
                 Application.DoEvents();
                 CalculateGoverningEquation(i);
                 Thread.Sleep(1);
                 Application.DoEvents();
+                CalculateSpecies(i);*/
+                Thread.Sleep(1);
+                Application.DoEvents();
+                CalculateGoverningEquation1(i);
+                Thread.Sleep(1);
+                Application.DoEvents();
                 CalculateSpecies(i);
+                Thread.Sleep(1);
+                Application.DoEvents();
+                CalculateGoverningEquation2(i);
             }
             sequence = tmpSequence + sequence;
         }
 
-        private void CalculateGoverningEquation(int timeStep)
+        private void CalculateGoverningEquation1(int timeStep)
+        {
+            Momentum(timeStep);
+            Continuity(timeStep);
+        }
+
+        private void CalculateGoverningEquation2(int timeStep)
         {
             b1 = Enumerable.Repeat<double>(0.0, nSpace - 1).ToArray<double>();
-            b2 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
+            /*b2 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
             b3 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
-            b4 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();
+            b4 = Enumerable.Repeat<double>(0.0, nSpace).ToArray<double>();*/
 
             // Energy equation_BTCS
             for (int i = 0; i < nSpace - 1; i++)
@@ -189,7 +205,7 @@ namespace PAR
                 }
             }
 
-            for (int i = 0; i < nSpace; i++)
+            /*for (int i = 0; i < nSpace; i++)
             {
                 for (int j = 0; j < nSpace; j++)
                 {
@@ -197,8 +213,42 @@ namespace PAR
                     K3[i, j] = 0.0;
                     K4[i, j] = 0.0;
                 }
+            }*/
+
+            // First Mesh
+            K1[0, 0] = density[timeStep, 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx + density[timeStep, 1] * A * u[timeStep, 1] / dx;
+            K1[0, 1] = CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx;
+            b1[0] = density[timeStep, 1] * A * temperature[timeStep, 1] / Dt - CalculateChemicalReaction(timeStep - 1, 1) - (-density[timeStep, 1] * u[timeStep, 1] * A / dx - CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx) * temperature[timeStep, 0];
+
+            // Last Mesh
+            K1[nSpace - 2, nSpace - 3] = -density[timeStep, nSpace - 1] * u[timeStep, nSpace - 1] * A / dx - CalculateThermalConductivity(timeStep - 1, nSpace - 1) * A / CalculateHeatCapacity(timeStep - 1, nSpace - 1) / dx / dx;
+            K1[nSpace - 2, nSpace - 2] = density[timeStep, nSpace - 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, nSpace - 1) * A / CalculateHeatCapacity(timeStep - 1, nSpace - 1) / dx / dx + density[timeStep, nSpace - 1] * A * u[timeStep, nSpace - 1] / dx;
+            b1[nSpace - 2] = density[timeStep, nSpace - 1] * A * temperature[timeStep, nSpace - 1] / Dt - (-CalculateThermalConductivity(timeStep - 1, nSpace - 1) * A / CalculateHeatCapacity(timeStep - 1, nSpace - 1) / dx / dx) * temperature[timeStep, nSpace];
+
+            for (int i = 1; i < nSpace / 10; i++)
+            {
+                K1[i, i - 1] = -density[timeStep, i + 1] * u[timeStep, i + 1] * A / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / dx / dx;
+                K1[i, i] = density[timeStep, i + 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / dx / dx + density[timeStep, i + 1] * A * u[timeStep, i + 1] / dx;
+                K1[i, i + 1] = density[timeStep - 1, i + 1] * A / CalculateHeatCapacity(timeStep - 1, i + 1) / dx / dx;
+                b1[i] = density[timeStep, i + 1] * A * temperature[timeStep, i + 1] / Dt;
             }
 
+            for (int i = nSpace / 10; i < nSpace - 2; i++)
+            {
+                K1[i, i - 1] = -density[timeStep, i + 1] * u[timeStep, i + 1] * A / dx - CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / dx / dx;
+                K1[i, i] = density[timeStep, i + 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / dx / dx + density[timeStep, i + 1] * A * u[timeStep, i + 1] / dx;
+                K1[i, i + 1] = CalculateThermalConductivity(timeStep - 1, i + 1) * A / CalculateHeatCapacity(timeStep - 1, i + 1) / dx / dx;
+                b1[i] = density[timeStep, i + 1] * A * temperature[timeStep, i + 1] / Dt;
+            }
+
+            //온도 업데이트
+            var X1 = LUdecomposition(K1, b1, nSpace - 1);
+            for (int i = 1; i < nSpace - 1; i++)
+            {
+                temperature[timeStep, i] = X1[i];
+            }
+
+            /* 변경 전
             K1[0, 0] = density[timeStep - 1, 1] * A / Dt + 2 * CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx;
             K1[0, 1] = density[timeStep - 1, 1] * A * u[timeStep - 1, 1] * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx;
             b1[0] = density[timeStep - 1, 1] * A * temperature[timeStep - 1, 1] / Dt - CalculateChemicalReaction(timeStep - 1, 1) - (-density[timeStep - 1, 1] * u[timeStep - 1, 1] * A * 0.5 / dx - CalculateThermalConductivity(timeStep - 1, 1) * A / CalculateHeatCapacity(timeStep - 1, 1) / dx / dx) * temperature[timeStep - 1, 0];
@@ -228,8 +278,8 @@ namespace PAR
             for (int i = 1; i < nSpace - 1; i++)
             {
                 temperature[timeStep, i] = X1[i];
-            }
-
+            }*/
+            /*
             //Momentum equation 
             //에측자 uprime 구하기_upwind
             K2[0, 0] = 1 / Dt + u[timeStep - 1, 1] / dx;
@@ -280,7 +330,7 @@ namespace PAR
             for (int i = 1; i < nSpace; i++)
             {
                 density[timeStep, i] = X4[i];
-            }
+            }*/
         }
 
         private double CalculateChemicalReaction(int timeStep, int spaceStep)
@@ -863,15 +913,29 @@ namespace PAR
                 }
             }
 
-            var curX = xSrc[idx - 1];
-            var nextX = xSrc[idx];
-            var curY = ySrc[idx - 1];
-            var nextY = ySrc[idx];
-            var h = nextX - curX;
-            var t = (x - curX) / h;
-            var y = curY * H00(t) + h * m[idx - 1] * H10(t) + nextY * H01(t) + h * m[idx] * H11(t);
+            if (idx == 0)
+            {
+                var curX = xSrc[idx];
+                var nextX = xSrc[idx];
+                var curY = ySrc[idx];
+                var nextY = ySrc[idx];
+                var h = nextX - curX;
+                var t = (x - curX) / h;
+                var y = curY * H00(t) + h * m[idx] * H10(t) + nextY * H01(t) + h * m[idx] * H11(t);
+                return y;
+            }
+            else
+            {
+                var curX = xSrc[idx - 1];
+                var nextX = xSrc[idx];
+                var curY = ySrc[idx - 1];
+                var nextY = ySrc[idx];
+                var h = nextX - curX;
+                var t = (x - curX) / h;
+                var y = curY * H00(t) + h * m[idx - 1] * H10(t) + nextY * H01(t) + h * m[idx] * H11(t);
 
-            return y;
+                return y;
+            }
         }
 
         private double H00(double t)
@@ -894,29 +958,15 @@ namespace PAR
             return t * t * (t - 1);
         }
 
-        public void Setvalue()
-        {
-
-        }
-
-        public void Manage()
-        {
-            for (int i = 1; i < nTime; i++)
-            {
-                Momentum(i);
-                Continuity(i);
-            }
-        }
-
         private void Momentum(int time)
         {
             for (int i = 1; i < nSpace; i++)
             {
-                uPredict[i] = 9.81 * (temperature[time - 1, i] - tempInf) * Dt + (1 - (Dt / dx) * (u[time - 1, i] - u[time - 1, i - 1])) * u[time - 1, i];
+                uPredict[time, i] = 9.81 * (temperature[time - 1, i] - tempInf) * Dt + (1 - (Dt / dx) * (u[time - 1, i] - u[time - 1, i - 1])) * u[time - 1, i];
             }
             for (int i = 1; i < nSpace; i++)
             {
-                u[time, i] = 0.5 * uPredict[i] + 9.81 * (temperature[time - 1, i] - tempInf) * Dt + (0.5 - (Dt / dx) * (u[time - 1, i] - u[time - 1, i - 1])) * u[time - 1, i];
+                u[time, i] = 0.5 * uPredict[time, i] + 9.81 * (temperature[time - 1, i] - tempInf) * Dt + (0.5 - (Dt / dx) * (u[time - 1, i] - u[time - 1, i - 1])) * u[time - 1, i];
             }
         }
 
