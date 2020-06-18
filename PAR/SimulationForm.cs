@@ -128,7 +128,6 @@ namespace PAR
                 for (int j = 1; j < (inputSpaceStep + 1); j++)
                 {
                     dgvU[j, i].Value = string.Format("{0:0.00E+0}", u[i, j]);
-                    //gphVelocity.Series["Series1"].Points.AddXY(string.Format("{0:0.00E+0}", (i + 1) * inputDt), string.Format("{0:0.00E+0}", u[i, j]));
                 }
             }
         }
